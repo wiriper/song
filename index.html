@@ -16,12 +16,13 @@
             --bg-1: #050816;
             --bg-2: #07111f;
             --text: #f8fafc;
-            --text-soft: rgba(248, 250, 252, .82);
-            --muted: rgba(203, 213, 225, .64);
-            --faint: rgba(203, 213, 225, .38);
-            --glass: rgba(8, 14, 28, .46);
-            --glass-strong: rgba(10, 18, 34, .64);
+            --text-strong: #ffffff;
+            --muted: rgba(203, 213, 225, .68);
+            --faint: rgba(203, 213, 225, .40);
+            --glass: rgba(8, 14, 28, .48);
+            --glass-strong: rgba(10, 18, 34, .66);
             --glass-soft: rgba(255, 255, 255, .07);
+            --glass-ultra: rgba(255, 255, 255, .04);
             --border: rgba(255, 255, 255, .14);
             --border-strong: rgba(255, 255, 255, .26);
             --cyan: #38d7ff;
@@ -33,26 +34,34 @@
             --danger: #ef4444;
             --success: #22c55e;
             --warning: #f59e0b;
-            --shadow: rgba(0, 0, 0, .55);
-            --glow-cyan: rgba(56, 215, 255, .3);
-            --glow-blue: rgba(79, 140, 255, .28);
-            --radius-xl: 36px;
-            --radius-lg: 28px;
-            --radius-md: 20px;
+            --shadow: rgba(0,0,0,.55);
+            --shadow-soft: rgba(0,0,0,.35);
+            --shadow-deep: rgba(0,0,0,.7);
+            --glow-cyan: rgba(56,215,255,.32);
+            --glow-blue: rgba(79,140,255,.28);
+            --glow-violet: rgba(167,139,250,.26);
+            --radius-2xl: 36px;
+            --radius-xl: 28px;
+            --radius-lg: 22px;
+            --radius-md: 18px;
             --radius-sm: 14px;
-            --nav-h: 64px;
-            --player-h: 98px;
             --safe-top: env(safe-area-inset-top, 0px);
             --safe-bottom: env(safe-area-inset-bottom, 0px);
+            --nav-h: 64px;
+            --player-h-desktop: 98px;
             --content-max: 1200px;
-            --ease: cubic-bezier(.22, .8, .22, 1);
+            --ease: cubic-bezier(.22,.8,.22,1);
+            --ease-spring: cubic-bezier(.16,1,.28,1);
+            --ease-out: cubic-bezier(0,0,.2,1);
             --track-a: #38d7ff;
             --track-b: #2563eb;
             --track-c: #020617;
-            --mx: 0;
-            --my: 0;
             --blur-main: 30px;
+            --blur-panel: 36px;
             --effect-opacity: 1;
+            --motion-scale: 1;
+            --spring-duration: .6s;
+            --panel-duration: .4s;
         }
         *,
         *::before,
@@ -70,7 +79,7 @@
             text-rendering: optimizeLegibility;
         }
         body {
-            font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", Segoe UI, Roboto, Helvetica, Arial, sans-serif;
             background: var(--bg-0);
             color: var(--text);
             min-height: 100%;
@@ -114,7 +123,7 @@
         input[type=range]::-webkit-slider-runnable-track {
             height: 5px;
             border-radius: 5px;
-            background: rgba(255, 255, 255, .18);
+            background: rgba(255,255,255,.16);
         }
         input[type=range]::-webkit-slider-thumb {
             -webkit-appearance: none;
@@ -124,7 +133,7 @@
             border-radius: 50%;
             background: #fff;
             margin-top: -7px;
-            box-shadow: 0 0 12px var(--glow-cyan), 0 2px 6px rgba(0, 0, 0, .3);
+            box-shadow: 0 0 12px var(--glow-cyan),0 2px 6px rgba(0,0,0,.3);
             cursor: pointer;
             border: 2px solid var(--cyan);
         }
@@ -140,16 +149,15 @@
             padding: 0;
             margin: -1px;
             overflow: hidden;
-            clip: rect(0, 0, 0, 0);
+            clip: rect(0,0,0,0);
             white-space: nowrap;
             border: 0;
         }
         @media(prefers-reduced-motion:reduce) {
-            * {
-                animation-duration: .001ms !important;
-                animation-iteration-count: 1 !important;
-                transition-duration: .001ms !important;
-                scroll-behavior: auto !important;
+            :root {
+                --motion-scale: 0.001;
+                --spring-duration: .01s;
+                --panel-duration: .01s;
             }
         }
         .app {
@@ -166,7 +174,7 @@
             z-index: 0;
             pointer-events: none;
             background: radial-gradient(ellipse at 50% 45%, var(--track-b) 0%, var(--track-c) 50%, #01030d 100%);
-            transition: background 2.5s var(--ease);
+            transition: background 2s var(--ease);
             opacity: var(--effect-opacity);
         }
         .background::after {
@@ -174,15 +182,15 @@
             position: absolute;
             inset: 0;
             background: radial-gradient(ellipse at calc(50% + var(--mx)*2) calc(48% + var(--my)*2), var(--track-a) 0%, transparent 55%),
-            radial-gradient(ellipse at calc(28% + var(--mx)*1.5) calc(18% + var(--my)*1.5), var(--track-b) 0%, transparent 48%);
-            opacity: .62;
-            transition: background 2.5s var(--ease);
+            radial-gradient(ellipse at calc(28% + var(--mx)*1.2) calc(18% + var(--my)*1.2), var(--track-b) 0%, transparent 48%);
+            opacity: .55;
+            transition: background 2s var(--ease);
         }
         .orb {
             position: absolute;
             border-radius: 50%;
             filter: blur(100px);
-            opacity: .35;
+            opacity: .32;
             pointer-events: none;
             will-change: transform;
         }
@@ -192,7 +200,7 @@
             background: var(--track-a);
             top: -90px;
             left: 8%;
-            animation: orbA 25s ease-in-out infinite;
+            animation: orbA 28s ease-in-out infinite;
         }
         .orb-two {
             width: 280px;
@@ -200,25 +208,25 @@
             background: var(--track-b);
             bottom: -80px;
             right: 6%;
-            animation: orbB 28s ease-in-out infinite;
-            opacity: .28;
+            animation: orbB 30s ease-in-out infinite;
+            opacity: .26;
         }
         @keyframes orbA {
             0%,
             100% {
-                transform: translate(0, 0) scale(1);
+                transform: translate(0,0) scale(1);
             }
             50% {
-                transform: translate(40px, -30px) scale(1.1);
+                transform: translate(40px,-30px) scale(1.1);
             }
         }
         @keyframes orbB {
             0%,
             100% {
-                transform: translate(0, 0) scale(1);
+                transform: translate(0,0) scale(1);
             }
             50% {
-                transform: translate(-30px, 25px) scale(1.08);
+                transform: translate(-30px,25px) scale(1.08);
             }
         }
         .particle-layer {
@@ -240,10 +248,10 @@
                 opacity: 0;
             }
             10% {
-                opacity: .6;
+                opacity: .5;
             }
             90% {
-                opacity: .6;
+                opacity: .5;
             }
             100% {
                 transform: translateY(-100vh) translateX(20px);
@@ -262,7 +270,7 @@
             position: absolute;
             inset: 0;
             pointer-events: none;
-            background: radial-gradient(ellipse at center, transparent 52%, rgba(0, 0, 0, .55) 100%);
+            background: radial-gradient(ellipse at center, transparent 52%, rgba(0,0,0,.55) 100%);
         }
         .top-nav {
             position: fixed;
@@ -272,17 +280,28 @@
             width: min(960px, calc(100vw - 28px));
             height: var(--nav-h);
             z-index: 120;
-            border-radius: var(--radius-xl);
-            background: linear-gradient(135deg, rgba(255, 255, 255, .11), rgba(255, 255, 255, .035));
+            border-radius: var(--radius-2xl);
+            background: linear-gradient(135deg, rgba(255,255,255,.11), rgba(255,255,255,.03));
             background-color: var(--glass-strong);
-            backdrop-filter: blur(var(--blur-main)) saturate(160%);
-            -webkit-backdrop-filter: blur(var(--blur-main)) saturate(160%);
+            backdrop-filter: blur(var(--blur-main)) saturate(165%);
+            -webkit-backdrop-filter: blur(var(--blur-main)) saturate(165%);
             border: 1px solid var(--border);
-            box-shadow: 0 20px 60px rgba(0, 0, 0, .5), inset 0 1px 0 rgba(255, 255, 255, .1);
+            box-shadow: 0 20px 60px rgba(0,0,0,.48), inset 0 1px 0 rgba(255,255,255,.10);
             display: flex;
             align-items: center;
             padding: 0 14px;
             gap: 4px;
+            animation: fadeSlideIn .6s var(--ease-spring);
+        }
+        @keyframes fadeSlideIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%,-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%,0);
+            }
         }
         .nav-cluster {
             display: flex;
@@ -314,10 +333,9 @@
             color: var(--text-soft);
             transition: all .2s var(--ease);
             flex-shrink: 0;
-            position: relative;
         }
         .nav-btn:hover {
-            background: rgba(255, 255, 255, .1);
+            background: rgba(255,255,255,.1);
             color: #fff;
         }
         .nav-btn:active {
@@ -348,7 +366,7 @@
             overflow: hidden;
             text-overflow: ellipsis;
             max-width: 200px;
-            color: #fff;
+            color: var(--text-strong);
             line-height: 1.2;
         }
         .nav-artist {
@@ -366,10 +384,10 @@
             letter-spacing: .07em;
             color: var(--cyan);
             font-weight: 600;
-            background: rgba(56, 215, 255, .1);
+            background: rgba(56,215,255,.10);
             padding: 3px 7px;
             border-radius: 14px;
-            border: 1px solid rgba(56, 215, 255, .2);
+            border: 1px solid rgba(56,215,255,.22);
             flex-shrink: 0;
             white-space: nowrap;
         }
@@ -382,7 +400,27 @@
             background: conic-gradient(from 0deg, var(--cyan), var(--blue), var(--violet), var(--cyan));
             box-shadow: 0 0 14px var(--glow-cyan);
             flex-shrink: 0;
-            border: 2px solid rgba(255, 255, 255, .15);
+            border: 2px solid rgba(255,255,255,.15);
+        }
+        .audio-status-badge {
+            display: none;
+            font-size: 8px;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 10px;
+            background: rgba(245,158,11,.1);
+            border: 1px solid rgba(245,158,11,.25);
+            color: var(--amber);
+        }
+        .audio-status-badge.visible {
+            display: inline-block;
+        }
+        .audio-status-badge.error {
+            background: rgba(239,68,68,.12);
+            border-color: rgba(239,68,68,.3);
+            color: var(--danger);
         }
         .stage {
             flex: 1;
@@ -391,7 +429,7 @@
             align-items: center;
             justify-content: center;
             padding-top: calc(80px + var(--safe-top));
-            padding-bottom: calc(140px + var(--safe-bottom));
+            padding-bottom: calc(150px + var(--safe-bottom));
             position: relative;
             z-index: 2;
             pointer-events: none;
@@ -403,9 +441,20 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
             flex-wrap: wrap;
             justify-content: center;
+            animation: fadeUp .5s var(--ease-out);
+        }
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(6px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
         .hero-label {
             font-size: 10px;
@@ -426,29 +475,8 @@
             color: var(--text-soft);
         }
         .hero-badge.accent {
-            border-color: rgba(56, 215, 255, .32);
+            border-color: rgba(56,215,255,.32);
             color: var(--cyan);
-        }
-        .audio-status-badge {
-            display: none;
-            font-size: 8px;
-            text-transform: uppercase;
-            letter-spacing: .06em;
-            font-weight: 600;
-            padding: 3px 8px;
-            border-radius: 10px;
-            background: rgba(245, 158, 11, .1);
-            border: 1px solid rgba(245, 158, 11, .25);
-            color: var(--amber);
-            flex-shrink: 0;
-        }
-        .audio-status-badge.visible {
-            display: inline-block;
-        }
-        .audio-status-badge.error {
-            background: rgba(239, 68, 68, .12);
-            border-color: rgba(239, 68, 68, .3);
-            color: var(--danger);
         }
         .carousel-wrap {
             position: relative;
@@ -474,25 +502,28 @@
             position: absolute;
             width: 300px;
             height: 420px;
-            border-radius: var(--radius-xl);
-            transition: transform .6s var(--ease), opacity .5s, filter .5s;
+            border-radius: var(--radius-2xl);
+            transition: transform var(--spring-duration) var(--ease-spring), opacity .4s, filter .4s;
             cursor: pointer;
             will-change: transform;
             backface-visibility: hidden;
             -webkit-backface-visibility: hidden;
             transform-style: preserve-3d;
         }
+        .carousel-card.dragging {
+            transition: none !important;
+        }
         .carousel-card.active {
             z-index: 20;
-            filter: drop-shadow(0 25px 45px rgba(0, 0, 0, .5)) drop-shadow(0 0 30px var(--glow-cyan));
+            filter: drop-shadow(0 25px 45px rgba(0,0,0,.5)) drop-shadow(0 0 30px var(--glow-cyan));
         }
         .carousel-card.near {
             z-index: 10;
-            filter: blur(.2px) drop-shadow(0 15px 30px rgba(0, 0, 0, .4));
+            filter: blur(.2px) drop-shadow(0 15px 30px rgba(0,0,0,.4));
         }
         .carousel-card.far {
             z-index: 5;
-            filter: blur(.8px) drop-shadow(0 6px 18px rgba(0, 0, 0, .3));
+            filter: blur(.8px) drop-shadow(0 6px 18px rgba(0,0,0,.3));
         }
         .carousel-card.hidden-card {
             z-index: 1;
@@ -502,11 +533,11 @@
         .card {
             width: 100%;
             height: 100%;
-            border-radius: var(--radius-xl);
+            border-radius: var(--radius-2xl);
             overflow: hidden;
             position: relative;
             border: 1px solid var(--border);
-            box-shadow: 0 20px 60px rgba(0, 0, 0, .45), inset 0 1px 0 rgba(255, 255, 255, .08);
+            box-shadow: 0 20px 60px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.08);
             background: #000;
         }
         .card-cover-img {
@@ -515,20 +546,15 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            border-radius: var(--radius-xl);
+            border-radius: var(--radius-2xl);
             z-index: 0;
         }
         .card-art {
             position: absolute;
             inset: 0;
-            border-radius: var(--radius-xl);
+            border-radius: var(--radius-2xl);
             overflow: hidden;
             z-index: 1;
-        }
-        .art-layer {
-            position: absolute;
-            inset: 0;
-            border-radius: var(--radius-xl);
         }
         .card-bottom-gradient {
             position: absolute;
@@ -536,8 +562,8 @@
             left: 0;
             right: 0;
             height: 48%;
-            background: linear-gradient(0deg, rgba(0, 0, 0, .88) 0%, transparent 100%);
-            border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+            background: linear-gradient(0deg, rgba(0,0,0,.88) 0%, transparent 100%);
+            border-radius: 0 0 var(--radius-2xl) var(--radius-2xl);
             z-index: 2;
         }
         .card-content {
@@ -555,19 +581,19 @@
             font-weight: 600;
             padding: 3px 8px;
             border-radius: 10px;
-            background: rgba(255, 255, 255, .09);
-            border: 1px solid rgba(255, 255, 255, .15);
+            background: rgba(255,255,255,.09);
+            border: 1px solid rgba(255,255,255,.15);
             color: #fff;
         }
         .card-badge.verified {
-            border-color: rgba(56, 215, 255, .35);
+            border-color: rgba(56,215,255,.35);
             color: var(--cyan);
         }
         .card-title {
             font-weight: 800;
             font-size: 19px;
             letter-spacing: -.03em;
-            color: #fff;
+            color: var(--text-strong);
             margin: 2px 0 0;
         }
         .card-artist {
@@ -578,15 +604,15 @@
         .card-glow-ring {
             position: absolute;
             inset: -3px;
-            border-radius: calc(var(--radius-xl) + 3px);
+            border-radius: calc(var(--radius-2xl) + 3px);
             border: 2px solid transparent;
             z-index: 1;
             pointer-events: none;
             transition: border-color .5s;
         }
         .carousel-card.active .card-glow-ring {
-            border-color: rgba(56, 215, 255, .35);
-            box-shadow: 0 0 24px rgba(56, 215, 255, .15);
+            border-color: rgba(56,215,255,.35);
+            box-shadow: 0 0 24px rgba(56,215,255,.15);
         }
         .now-playing-indicator {
             position: absolute;
@@ -599,10 +625,10 @@
             letter-spacing: .1em;
             color: #fff;
             font-weight: 600;
-            background: rgba(0, 0, 0, .5);
+            background: rgba(0,0,0,.5);
             padding: 4px 10px;
             border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, .15);
+            border: 1px solid rgba(255,255,255,.15);
             display: none;
             align-items: center;
             gap: 5px;
@@ -632,32 +658,39 @@
             left: 50%;
             transform: translateX(-50%);
             width: min(1060px, calc(100vw - 24px));
-            min-height: var(--player-h);
+            min-height: var(--player-h-desktop);
             z-index: 120;
-            border-radius: var(--radius-xl);
-            background: linear-gradient(135deg, rgba(255, 255, 255, .1), rgba(255, 255, 255, .03));
+            border-radius: var(--radius-2xl);
+            background: linear-gradient(135deg, rgba(255,255,255,.1), rgba(255,255,255,.03));
             background-color: var(--glass-strong);
-            backdrop-filter: blur(var(--blur-main)) saturate(160%);
-            -webkit-backdrop-filter: blur(var(--blur-main)) saturate(160%);
+            backdrop-filter: blur(var(--blur-main)) saturate(165%);
+            -webkit-backdrop-filter: blur(var(--blur-main)) saturate(165%);
             border: 1px solid var(--border);
-            box-shadow: 0 20px 60px rgba(0, 0, 0, .5), inset 0 1px 0 rgba(255, 255, 255, .1);
-            display: flex;
+            box-shadow: 0 20px 60px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.10);
+            display: grid;
+            grid-template-columns: minmax(200px, 1.2fr) minmax(340px, 1.6fr) minmax(160px, 0.9fr);
             align-items: center;
-            padding: 8px 16px;
             gap: 12px;
+            padding: 8px 18px;
+            animation: fadeSlideIn .5s var(--ease-spring);
         }
-        .player-controls-left {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            flex-shrink: 0;
+        @media(max-width:1023px) {
+            .player {
+                grid-template-columns: minmax(160px, 1fr) minmax(280px, 1.5fr) auto;
+                gap: 8px;
+                padding: 6px 12px;
+            }
         }
-        .player-track-center {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-            min-width: 0;
+        @media(max-width:699px) {
+            .player {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto auto;
+                gap: 6px;
+                padding: 8px 10px;
+                min-height: auto;
+                bottom: calc(8px + var(--safe-bottom));
+                border-radius: var(--radius-xl);
+            }
         }
         .player-track-info {
             display: flex;
@@ -666,12 +699,11 @@
             min-width: 0;
         }
         .player-mini-art {
-            width: 44px;
-            height: 44px;
-            min-width: 44px;
-            min-height: 44px;
+            width: 46px;
+            height: 46px;
+            min-width: 46px;
+            min-height: 46px;
             border-radius: 10px;
-            flex-shrink: 0;
             overflow: hidden;
             position: relative;
             border: 1px solid var(--border);
@@ -685,19 +717,22 @@
         .player-track-text {
             min-width: 0;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
         }
         .player-track-title {
             font-weight: 700;
-            font-size: 13px;
+            font-size: 14px;
             letter-spacing: -.02em;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            color: #fff;
+            color: var(--text-strong);
         }
         .player-track-artist {
             font-weight: 400;
-            font-size: 10px;
+            font-size: 11px;
             color: var(--muted);
             white-space: nowrap;
             overflow: hidden;
@@ -709,17 +744,16 @@
             gap: 8px;
         }
         .player-time {
-            font-size: 9px;
+            font-size: 10px;
             font-weight: 500;
             color: var(--muted);
-            font-variant-numeric: tabular-nums;
-            min-width: 30px;
+            min-width: 32px;
             text-align: center;
         }
         .progress-track {
             flex: 1;
             height: 6px;
-            background: rgba(255, 255, 255, .12);
+            background: rgba(255,255,255,.12);
             border-radius: 6px;
             cursor: pointer;
             position: relative;
@@ -747,42 +781,33 @@
             box-shadow: 0 0 10px var(--glow-cyan);
             opacity: 0;
             transition: opacity .2s;
-            pointer-events: none;
         }
         .progress-track:hover .progress-fill::after,
         .progress-track.dragging .progress-fill::after {
             opacity: 1;
         }
-        .player-controls-right {
+        .player-controls {
             display: flex;
             align-items: center;
             gap: 4px;
             flex-shrink: 0;
+            justify-content: flex-end;
+            flex-wrap: wrap;
         }
         .player-btn {
-            width: 36px;
-            height: 36px;
-            min-width: 36px;
-            min-height: 36px;
+            width: 38px;
+            height: 38px;
+            min-width: 38px;
+            min-height: 38px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             color: var(--text-soft);
             transition: all .2s var(--ease);
-            flex-shrink: 0;
-        }
-        .player-btn svg {
-            width: 17px;
-            height: 17px;
-            stroke: currentColor;
-            fill: none;
-            stroke-width: 2;
-            stroke-linecap: round;
-            stroke-linejoin: round;
         }
         .player-btn:hover {
-            background: rgba(255, 255, 255, .1);
+            background: rgba(255,255,255,.1);
             color: #fff;
         }
         .player-btn:active {
@@ -796,7 +821,6 @@
             color: var(--pink);
         }
         .play-btn-wrap {
-            position: relative;
             flex-shrink: 0;
         }
         .play-btn {
@@ -810,17 +834,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 6px 24px rgba(0, 0, 0, .4), 0 0 30px var(--glow-cyan);
+            box-shadow: 0 6px 24px rgba(0,0,0,.4), 0 0 30px var(--glow-cyan);
             transition: all .25s var(--ease);
-        }
-        .play-btn svg {
-            width: 20px;
-            height: 20px;
-            fill: currentColor;
-            stroke: none;
-        }
-        .play-btn:hover {
-            transform: scale(1.06);
         }
         .play-btn:active {
             transform: scale(.93);
@@ -840,18 +855,17 @@
         }
         .volume-slider input {
             width: 60px;
-            height: 4px;
         }
         .overlay-backdrop {
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, .45);
+            background: rgba(0,0,0,.45);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             z-index: 150;
             opacity: 0;
             pointer-events: none;
-            transition: opacity .4s;
+            transition: opacity .35s;
         }
         .overlay-backdrop.visible {
             opacity: 1;
@@ -860,18 +874,18 @@
         .panel-overlay {
             position: fixed;
             z-index: 160;
-            border-radius: var(--radius-xl);
-            background: linear-gradient(135deg, rgba(255, 255, 255, .1), rgba(255, 255, 255, .03));
+            border-radius: var(--radius-2xl);
+            background: linear-gradient(135deg, rgba(255,255,255,.10), rgba(255,255,255,.03));
             background-color: var(--glass-strong);
-            backdrop-filter: blur(28px) saturate(160%);
-            -webkit-backdrop-filter: blur(28px) saturate(160%);
+            backdrop-filter: blur(var(--blur-panel)) saturate(165%);
+            -webkit-backdrop-filter: blur(var(--blur-panel)) saturate(165%);
             border: 1px solid var(--border-strong);
-            box-shadow: 0 25px 80px rgba(0, 0, 0, .6), inset 0 1px 0 rgba(255, 255, 255, .1);
+            box-shadow: 0 25px 80px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.10);
             display: flex;
             flex-direction: column;
             opacity: 0;
             pointer-events: none;
-            transition: opacity .3s, transform .4s var(--ease);
+            transition: opacity var(--panel-duration), transform var(--panel-duration) var(--ease-spring);
             overflow: hidden;
         }
         .panel-overlay.open {
@@ -881,12 +895,12 @@
         .panel-overlay.center-modal {
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%) scale(.94);
+            transform: translate(-50%,-50%) scale(.94);
             width: min(680px, calc(100vw - 20px));
             max-height: 82vh;
         }
         .panel-overlay.center-modal.open {
-            transform: translate(-50%, -50%) scale(1);
+            transform: translate(-50%,-50%) scale(1);
         }
         .panel-overlay.side-panel {
             top: calc(90px + var(--safe-top));
@@ -905,7 +919,7 @@
             right: 0;
             width: 100%;
             max-height: 75vh;
-            border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+            border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
             transform: translateY(100%);
         }
         .panel-overlay.bottom-sheet.open {
@@ -918,11 +932,6 @@
             padding: 12px 16px 8px;
             border-bottom: 1px solid var(--border);
         }
-        .panel-title {
-            font-weight: 700;
-            font-size: 15px;
-            color: #fff;
-        }
         .panel-close {
             width: 32px;
             height: 32px;
@@ -933,15 +942,8 @@
             color: var(--muted);
         }
         .panel-close:hover {
-            background: rgba(255, 255, 255, .1);
+            background: rgba(255,255,255,.1);
             color: #fff;
-        }
-        .panel-close svg {
-            width: 14px;
-            height: 14px;
-            stroke: currentColor;
-            fill: none;
-            stroke-width: 2;
         }
         .panel-body {
             flex: 1;
@@ -952,7 +954,7 @@
         }
         .search-input {
             width: 100%;
-            background: rgba(255, 255, 255, .05);
+            background: rgba(255,255,255,.05);
             border: 1px solid var(--border);
             border-radius: var(--radius-md);
             padding: 12px 16px;
@@ -972,40 +974,10 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            padding: 9px 10px;
+            padding: 9px;
             border-radius: var(--radius-sm);
             cursor: pointer;
             min-height: 44px;
-        }
-        .search-result-item:hover {
-            background: rgba(255, 255, 255, .06);
-        }
-        .search-mini-art {
-            width: 38px;
-            height: 38px;
-            border-radius: 8px;
-            overflow: hidden;
-            position: relative;
-            background: #000;
-        }
-        .search-mini-art img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        .search-result-title {
-            font-weight: 600;
-            font-size: 13px;
-            color: #fff;
-        }
-        .search-result-artist {
-            font-size: 10px;
-            color: var(--muted);
-        }
-        .queue-list {
-            flex: 1;
-            overflow-y: auto;
-            padding: 4px 8px 8px;
         }
         .queue-item {
             display: flex;
@@ -1017,8 +989,8 @@
             min-height: 44px;
         }
         .queue-item.active {
-            background: rgba(56, 215, 255, .08);
-            border: 1px solid rgba(56, 215, 255, .2);
+            background: rgba(56,215,255,.08);
+            border: 1px solid rgba(56,215,255,.2);
         }
         .lyrics-scroll {
             flex: 1;
@@ -1045,19 +1017,6 @@
             gap: 8px;
             padding: 6px 12px 12px;
         }
-        .library-card {
-            border-radius: var(--radius-md);
-            padding: 14px 10px;
-            background: var(--glass-soft);
-            border: 1px solid var(--border);
-            cursor: pointer;
-            text-align: center;
-            min-height: 44px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 3px;
-        }
         .creator-field {
             display: flex;
             flex-direction: column;
@@ -1072,7 +1031,7 @@
         }
         .creator-field input,
         .creator-field select {
-            background: rgba(255, 255, 255, .05);
+            background: rgba(255,255,255,.05);
             border: 1px solid var(--border);
             border-radius: var(--radius-sm);
             padding: 9px 11px;
@@ -1085,7 +1044,7 @@
             border-radius: var(--radius-sm);
             font-weight: 600;
             font-size: 12px;
-            background: rgba(255, 255, 255, .08);
+            background: rgba(255,255,255,.08);
             border: 1px solid var(--border);
             color: #fff;
             cursor: pointer;
@@ -1095,8 +1054,8 @@
             gap: 6px;
         }
         .creator-btn.accent {
-            background: rgba(56, 215, 255, .12);
-            border-color: rgba(56, 215, 255, .3);
+            background: rgba(56,215,255,.12);
+            border-color: rgba(56,215,255,.3);
             color: var(--cyan);
         }
         .toast-container {
@@ -1112,13 +1071,12 @@
         .toast {
             background: var(--glass-strong);
             backdrop-filter: blur(18px);
-            -webkit-backdrop-filter: blur(18px);
             border: 1px solid var(--border);
             border-radius: var(--radius-sm);
             padding: 9px 15px;
             font-size: 12px;
             color: #fff;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, .4);
+            box-shadow: 0 8px 30px rgba(0,0,0,.4);
             animation: tIn .35s, tOut .3s 2s forwards;
             pointer-events: auto;
             max-width: 260px;
@@ -1139,100 +1097,22 @@
                 transform: translateX(30px);
             }
         }
-        @media(max-width:1023px) {
-            .carousel-card {
-                width: 270px;
-                height: 370px;
-            }
-            .carousel-wrap {
-                height: 420px;
-            }
+        .profile-low .orb,
+        .profile-low .particle-layer {
+            display: none;
         }
-        @media(max-width:699px) {
-            .top-nav {
-                height: 48px;
-                border-radius: 24px;
-                padding: 0 8px;
-                gap: 2px;
-                width: calc(100vw - 12px);
+        .profile-low .top-nav,
+        .profile-low .player,
+        .profile-low .panel-overlay {
+            backdrop-filter: blur(12px);
+        }
+        @media(max-width:360px) {
+            .player-track-title {
+                font-size: 12px;
             }
-            .nav-btn {
-                width: 32px;
-                height: 32px;
-                min-width: 32px;
-                min-height: 32px;
-            }
-            .nav-btn svg {
-                width: 15px;
-                height: 15px;
-            }
-            .nav-title {
+            .player-track-artist {
                 font-size: 10px;
-                max-width: 100px;
             }
-            .nav-artist {
-                font-size: 8px;
-            }
-            .carousel-card {
-                width: min(76vw, 260px);
-                height: 340px;
-            }
-            .carousel-wrap {
-                height: 370px;
-            }
-            .player {
-                min-height: auto;
-                flex-wrap: wrap;
-                border-radius: 24px;
-                padding: 6px 10px;
-                bottom: calc(6px + var(--safe-bottom));
-            }
-            .play-btn {
-                width: 38px;
-                height: 38px;
-                min-width: 38px;
-                min-height: 38px;
-            }
-            .player-btn {
-                width: 30px;
-                height: 30px;
-                min-width: 30px;
-                min-height: 30px;
-            }
-            .panel-overlay.center-modal {
-                width: calc(100vw - 10px);
-                max-height: 88vh;
-                border-radius: var(--radius-lg);
-            }
-            .panel-overlay.side-panel {
-                top: auto;
-                bottom: 0;
-                left: 0;
-                right: 0;
-                width: 100%;
-                height: 60vh;
-                border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-                transform: translateY(100%);
-            }
-            .panel-overlay.side-panel.open {
-                transform: translateY(0);
-            }
-            .panel-overlay.bottom-sheet {
-                max-height: 70vh;
-            }
-        }
-        body.profile-low .orb {
-            display: none;
-        }
-        body.profile-low .particle-layer {
-            display: none;
-        }
-        body.profile-low .top-nav,
-        body.profile-low .player {
-            backdrop-filter: blur(12px);
-        }
-        body.profile-low .panel-overlay {
-            backdrop-filter: blur(12px);
         }
     </style>
 </head>
@@ -1249,8 +1129,8 @@
         <div class="sr-only" id="announcer" aria-live="polite"></div>
         <header class="top-nav" id="topNav">
             <div class="nav-cluster left">
-                <button class="nav-btn" aria-label="Previous track" id="btnBack"><svg viewBox="0 0 24 24"><polyline points="19 20 9 12 19 4"/></svg></button>
-                <button class="nav-btn" aria-label="Next track" id="btnForward"><svg viewBox="0 0 24 24"><polyline points="5 4 15 12 5 20"/></svg></button>
+                <button class="nav-btn" aria-label="Previous" id="btnBack"><svg viewBox="0 0 24 24"><polyline points="19 20 9 12 19 4"/></svg></button>
+                <button class="nav-btn" aria-label="Next" id="btnForward"><svg viewBox="0 0 24 24"><polyline points="5 4 15 12 5 20"/></svg></button>
                 <button class="nav-btn" aria-label="Library" id="btnLibrary"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></button>
             </div>
             <div class="nav-cluster center">
@@ -1282,46 +1162,46 @@
             </div>
         </main>
         <footer class="player" id="player">
-            <div class="player-controls-left">
-                <button class="player-btn" aria-label="Shuffle" id="btnShuffle"><svg viewBox="0 0 24 24"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg></button>
-                <button class="player-btn" aria-label="Previous" id="btnPrev"><svg viewBox="0 0 24 24"><polygon points="19 20 9 12 19 4 19 20" fill="currentColor" stroke="none"/><line x1="5" y1="5" x2="5" y2="19" stroke="currentColor" stroke-width="2"/></svg></button>
-                <div class="play-btn-wrap"><button class="play-btn" aria-label="Play" id="btnPlay"><svg viewBox="0 0 24 24" id="iconPlay"><polygon points="5 3 19 12 5 21 5 3" fill="currentColor"/></svg><svg viewBox="0 0 24 24" id="iconPause" style="display:none"><rect x="6" y="4" width="4" height="16" fill="currentColor"/><rect x="14" y="4" width="4" height="16" fill="currentColor"/></svg></button></div>
-                <button class="player-btn" aria-label="Next" id="btnNext"><svg viewBox="0 0 24 24"><polygon points="5 4 15 12 5 20 5 4" fill="currentColor" stroke="none"/><line x1="19" y1="5" x2="19" y2="19" stroke="currentColor" stroke-width="2"/></svg></button>
-                <button class="player-btn" aria-label="Repeat off" id="btnRepeat"><svg viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg><span style="font-size:8px;font-weight:700;display:none" id="repeatOneBadge">1</span></button>
-            </div>
-            <div class="player-track-center">
-                <div class="player-track-info">
-                    <div class="player-mini-art" id="playerMiniArt"></div>
-                    <div class="player-track-text">
-                        <div class="player-track-title" id="playerTitle">Black Orbit</div>
-                        <div class="player-track-artist" id="playerArtist">Nova Vale</div>
-                    </div>
+            <div class="player-track-info">
+                <div class="player-mini-art" id="playerMiniArt"><div class="art-layer" style="background:linear-gradient(135deg,var(--track-a),var(--track-b))"></div></div>
+                <div class="player-track-text">
+                    <div class="player-track-title" id="playerTitle">Black Orbit</div>
+                    <div class="player-track-artist" id="playerArtist">Nova Vale</div>
                 </div>
+            </div>
+            <div>
                 <div class="player-progress-row">
                     <span class="player-time" id="timeCurrent">0:00</span>
-                    <div class="progress-track" id="progressTrack" role="slider" aria-label="Track progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0">
+                    <div class="progress-track" id="progressTrack" role="slider" aria-label="Seek" aria-valuemin="0" aria-valuemax="100" tabindex="0">
                         <div class="progress-fill" id="progressFill" style="width:0%"></div>
                     </div>
                     <span class="player-time" id="timeDuration">0:00</span>
                 </div>
+                <div class="player-controls" style="justify-content:center;margin-top:4px">
+                    <div class="play-btn-wrap"><button class="play-btn" aria-label="Play" id="btnPlay"><svg viewBox="0 0 24 24" id="iconPlay"><polygon points="5 3 19 12 5 21 5 3" fill="currentColor"/></svg><svg viewBox="0 0 24 24" id="iconPause" style="display:none"><rect x="6" y="4" width="4" height="16" fill="currentColor"/><rect x="14" y="4" width="4" height="16" fill="currentColor"/></svg></button></div>
+                    <button class="player-btn" aria-label="Shuffle" id="btnShuffle"><svg viewBox="0 0 24 24"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg></button>
+                    <button class="player-btn" aria-label="Previous" id="btnPrev"><svg viewBox="0 0 24 24"><polygon points="19 20 9 12 19 4 19 20" fill="currentColor"/><line x1="5" y1="5" x2="5" y2="19" stroke="currentColor" stroke-width="2"/></svg></button>
+                    <button class="player-btn" aria-label="Next" id="btnNext"><svg viewBox="0 0 24 24"><polygon points="5 4 15 12 5 20 5 4" fill="currentColor"/><line x1="19" y1="5" x2="19" y2="19" stroke="currentColor" stroke-width="2"/></svg></button>
+                </div>
             </div>
-            <div class="player-controls-right">
-                <button class="player-btn" aria-label="Like" id="btnLike"><svg viewBox="0 0 24 24" id="iconHeart"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" fill="none" stroke="currentColor" stroke-width="2"/></svg><svg viewBox="0 0 24 24" id="iconHeartFilled" style="display:none"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" fill="currentColor" stroke="none"/></svg></button>
-                <button class="player-btn" aria-label="Lyrics panel" id="btnLyricsPanel"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></button>
-                <button class="player-btn" aria-label="Queue panel" id="btnQueuePanel"><svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="1"/><circle cx="3" cy="12" r="1"/><circle cx="3" cy="18" r="1"/></svg></button>
+            <div class="player-controls">
+                <button class="player-btn" aria-label="Like" id="btnLike"><svg viewBox="0 0 24 24" id="iconHeart"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" fill="none" stroke="currentColor" stroke-width="2"/></svg><svg viewBox="0 0 24 24" id="iconHeartFilled" style="display:none"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" fill="currentColor"/></svg></button>
+                <button class="player-btn" aria-label="Lyrics" id="btnLyricsPanel"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></button>
+                <button class="player-btn" aria-label="Queue" id="btnQueuePanel"><svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="1"/><circle cx="3" cy="12" r="1"/><circle cx="3" cy="18" r="1"/></svg></button>
+                <button class="player-btn" aria-label="Repeat" id="btnRepeat"><svg viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg><span style="font-size:8px;display:none" id="repeatOneBadge">1</span></button>
                 <div class="volume-wrap">
-                    <button class="player-btn" aria-label="Mute" id="btnMute"><svg viewBox="0 0 24 24" id="iconVolume"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="currentColor" stroke="none"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07" fill="none" stroke="currentColor" stroke-width="2"/></svg><svg viewBox="0 0 24 24" id="iconMute" style="display:none"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="currentColor" stroke="none"/><line x1="23" y1="9" x2="17" y2="15" stroke="currentColor" stroke-width="2"/><line x1="17" y1="9" x2="23" y2="15" stroke="currentColor" stroke-width="2"/></svg></button>
+                    <button class="player-btn" aria-label="Mute" id="btnMute"><svg viewBox="0 0 24 24" id="iconVolume"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="currentColor"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07" fill="none" stroke="currentColor" stroke-width="2"/></svg><svg viewBox="0 0 24 24" id="iconMute" style="display:none"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="currentColor"/><line x1="23" y1="9" x2="17" y2="15" stroke="currentColor" stroke-width="2"/><line x1="17" y1="9" x2="23" y2="15" stroke="currentColor" stroke-width="2"/></svg></button>
                     <div class="volume-slider"><input type="range" min="0" max="100" value="76" aria-label="Volume" id="volumeSlider"></div>
                 </div>
             </div>
         </footer>
         <div class="overlay-backdrop" id="overlayBackdrop"></div>
         <section class="panel-overlay center-modal" id="searchOverlay" role="dialog" aria-modal="true">
-            <input type="text" class="search-input" id="searchInput" placeholder="Search tracks, artists..." style="margin:10px 12px 6px">
+            <input type="text" class="search-input" id="searchInput" placeholder="Search tracks..." style="margin:10px 12px 6px">
             <div class="search-results" id="searchResults"></div>
         </section>
         <aside class="panel-overlay side-panel" id="queuePanel" role="dialog" aria-modal="true">
-            <div class="panel-header"><span class="panel-title">Up Next</span><button class="panel-close" id="btnCloseQueue"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+            <div class="panel-header"><span class="panel-title">Queue</span><button class="panel-close" id="btnCloseQueue"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
             <div class="queue-list" id="queueList"></div>
         </aside>
         <section class="panel-overlay center-modal" id="lyricsPanel" role="dialog" aria-modal="true">
@@ -1333,112 +1213,69 @@
             <div class="library-grid" id="libraryGrid"></div>
         </section>
         <section class="panel-overlay center-modal" id="creatorPanel" role="dialog" aria-modal="true">
-            <div class="panel-header"><span class="panel-title">Creator Studio</span><span class="hero-badge accent" style="margin-left:8px">VERIFIED CREATOR</span><button class="panel-close" id="btnCloseCreator"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+            <div class="panel-header"><span class="panel-title">Creator Studio</span><span class="hero-badge accent">VERIFIED CREATOR</span><button class="panel-close" id="btnCloseCreator"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
             <div class="panel-body" id="creatorBody">
-                <div class="creator-field"><label>📁 Audio File</label><input type="file" id="cfAudio" accept="audio/mpeg,audio/mp3,audio/mp4,audio/ogg,audio/wav,audio/flac"></div>
+                <div class="creator-field"><label>Audio File</label><input type="file" id="cfAudio" accept="audio/mpeg,audio/mp3,audio/mp4,audio/ogg,audio/wav,audio/flac"></div>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
                     <div class="creator-field"><label>Title</label><input type="text" id="cfTitle" placeholder="Auto-detected"></div>
                     <div class="creator-field"><label>Artist</label><input type="text" id="cfArtist" placeholder="Auto-detected"></div>
                     <div class="creator-field"><label>Album</label><input type="text" id="cfAlbum" placeholder="Auto-detected"></div>
                     <div class="creator-field"><label>Genre</label><input type="text" id="cfGenre" placeholder="Auto-detected"></div>
                     <div class="creator-field"><label>Year</label><input type="text" id="cfYear" placeholder="2026"></div>
-                    <div class="creator-field"><label>Quality</label><select id="cfQuality"><option>Spatial</option><option>Hi-Res</option><option>Lossless</option></select></div>
+                    <div class="creator-field"><label>Quality</label><select id="cfQuality"><option>Imported</option><option>Spatial</option><option>Hi-Res</option><option>Lossless</option></select></div>
                 </div>
                 <div class="creator-field"><label>Cover Image</label><input type="file" id="cfCover" accept="image/*"></div>
-                <div class="creator-field"><label>Lyrics File (.lrc or .txt)</label><input type="file" id="cfLyrics" accept=".lrc,.txt"></div>
+                <div class="creator-field"><label>Lyrics File</label><input type="file" id="cfLyrics" accept=".lrc,.txt"></div>
                 <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
-                    <button class="creator-btn accent" id="btnAddTempTrack">➕ Add to Session &amp; Play</button>
+                    <button class="creator-btn accent" id="btnAddTempTrack">➕ Add to Session & Play</button>
                     <button class="creator-btn" id="btnCopyManifest">📋 Copy Manifest JSON</button>
                 </div>
-                <div class="creator-code-block" id="manifestPreview" style="margin-top:10px;max-height:150px;overflow-y:auto;font-size:10px;background:rgba(0,0,0,.4);padding:10px;border-radius:12px;white-space:pre-wrap;display:none"></div>
+                <div id="manifestPreview" style="margin-top:10px;max-height:150px;overflow-y:auto;font-size:10px;background:rgba(0,0,0,.4);padding:10px;border-radius:12px;white-space:pre-wrap;display:none"></div>
             </div>
         </section>
         <div class="toast-container" id="toastContainer" aria-live="polite"></div>
     </div>
     <script>
         (function() {
-            const STORAGE_KEY = 'auralis-vision-ultra-v3';
+            "use strict";
+            const STORAGE_KEY = 'auralis-vision-ultra-v5';
             const FALLBACK_TRACKS = [
                 { id: 'black-orbit', title: 'Black Orbit', artist: 'Nova Vale', album: 'Event Horizon Dreams',
                     genre: 'Cinematic Electronic', mood: 'Cosmic', year: 2026, duration: 226, quality: 'Spatial',
                     bpm: 118, audioSrc: 'songs/black-orbit.mp3', coverSrc: 'covers/black-orbit.jpg',
                     lyricsSrc: 'lyrics/black-orbit.lrc', palette: ['#38d7ff', '#2563eb', '#020617'], verified: true,
                     lyrics: ['We drift where the silence glows', 'Beyond the reach of fading stars',
-                        'Light bends softly through the cold', 'A gravity we cannot hold',
-                        'Orbit around what we once knew', 'Falling gently into the new', 'Signals lost in endless night',
-                        'Yet we find our way by inner light'
-                    ] },
+                        'Light bends softly through the cold'] },
                 { id: 'crystal-echoes', title: 'Crystal Echoes', artist: 'Mira Sol', album: 'Glass Sky Rituals',
-                    genre: 'Ambient', mood: 'Ethereal', year: 2026, duration: 214, quality: 'Lossless', bpm: 98,
-                    audioSrc: 'songs/crystal-echoes.mp3', coverSrc: 'covers/crystal-echoes.jpg',
-                    lyricsSrc: 'lyrics/crystal-echoes.lrc', palette: ['#a78bfa', '#22d3ee', '#111827'], verified: true,
-                    lyrics: ['Echoes ringing through the glass', 'Fractured light upon the path', 'Every shard a memory',
-                        'Of what we were and what could be', 'Crystalline voices in the air',
-                        'Whispering secrets everywhere', 'We walk on mirrors, cold and bright',
-                        'Reflecting day into the night'
-                    ] },
-                { id: 'midnight-signal', title: 'Midnight Signal', artist: 'Orion West',
-                    album: 'Frequencies After Dark', genre: 'Synthwave', mood: 'Electric', year: 2026, duration: 242,
-                    quality: 'Hi-Res', bpm: 138, audioSrc: 'songs/midnight-signal.mp3',
-                    coverSrc: 'covers/midnight-signal.jpg', lyricsSrc: 'lyrics/midnight-signal.lrc',
-                    palette: ['#ef4444', '#3b82f6', '#050816'], verified: false,
-                    lyrics: ['A signal cuts the midnight air', 'Frequency of deep despair', 'Wires hum with restless power',
-                        'Counting down the final hour', 'Neon veins beneath the skin', 'Let the electric night begin',
-                        'Pulses racing through the grid', 'Every heartbeat synchronized'
-                    ] },
-                { id: 'afterglow-drive', title: 'Afterglow Drive', artist: 'Elara Moon', album: 'Neon Dusk',
-                    genre: 'Chillwave', mood: 'Warm', year: 2026, duration: 198, quality: 'Spatial', bpm: 105,
-                    audioSrc: 'songs/afterglow-drive.mp3', coverSrc: 'covers/afterglow-drive.jpg',
-                    lyricsSrc: 'lyrics/afterglow-drive.lrc', palette: ['#fb7185', '#f59e0b', '#312e81'], verified: true,
-                    lyrics: ['Sunset bleeding on the road', 'Carrying a gentle load', 'Horizon melting into gold',
-                        'Stories waiting to be told', 'We drive into the afterglow', 'Where warm winds begin to blow',
-                        'Radio plays a distant song', 'As the evening carries on'
-                    ] },
-                { id: 'velvet-gravity', title: 'Velvet Gravity', artist: 'Kairo Bloom', album: 'Soft Collapse',
-                    genre: 'Downtempo', mood: 'Deep', year: 2026, duration: 251, quality: 'Lossless', bpm: 85,
-                    audioSrc: 'songs/velvet-gravity.mp3', coverSrc: 'covers/velvet-gravity.jpg',
-                    lyricsSrc: 'lyrics/velvet-gravity.lrc', palette: ['#94a3b8', '#60a5fa', '#020617'], verified: false,
-                    lyrics: ['Heavy like velvet, pulling me down', 'Into the quiet where I drown',
-                        'Gravity soft as a whispered name', 'Drawing me closer to the flame', 'Every breath a slow descent',
-                        'Into a world of calm intent', 'Weightless moments in between',
-                        'The deepest blue I have ever seen'
-                    ] },
-                { id: 'neon-rainfall', title: 'Neon Rainfall', artist: 'Sera Voss', album: 'Weather In Chrome',
-                    genre: 'Future Bass', mood: 'Rainy', year: 2026, duration: 207, quality: 'Spatial', bpm: 112,
-                    audioSrc: 'songs/neon-rainfall.mp3', coverSrc: 'covers/neon-rainfall.jpg',
-                    lyricsSrc: 'lyrics/neon-rainfall.lrc', palette: ['#34d399', '#06b6d4', '#082f49'], verified: true,
-                    lyrics: ['Rain falls in neon streaks', 'Washing over city peaks', 'Every drop a tiny light',
-                        'Illuminating endless night', 'We stand beneath the glowing sky', 'As chrome reflections pass us by',
-                        'The pavement shines like liquid glass', 'Moments that could never last'
-                    ] },
-                { id: 'silent-comet', title: 'Silent Comet', artist: 'Atlas Grey',
-                    album: 'Long Way Through The Stars', genre: 'Space Ambient', mood: 'Drifting', year: 2026,
-                    duration: 233, quality: 'Hi-Res', bpm: 72, audioSrc: 'songs/silent-comet.mp3',
-                    coverSrc: 'covers/silent-comet.jpg', lyricsSrc: 'lyrics/silent-comet.lrc',
+                    genre: 'Ambient', mood: 'Ethereal', duration: 214, quality: 'Lossless', bpm: 98,
+                    audioSrc: 'songs/crystal-echoes.mp3', palette: ['#a78bfa', '#22d3ee', '#111827'], verified: true,
+                    lyrics: ['Echoes ringing through the glass'] },
+                { id: 'midnight-signal', title: 'Midnight Signal', artist: 'Orion West', genre: 'Synthwave',
+                    mood: 'Electric', duration: 242, quality: 'Hi-Res', bpm: 138,
+                    audioSrc: 'songs/midnight-signal.mp3', palette: ['#ef4444', '#3b82f6', '#050816'], verified: false,
+                    lyrics: ['A signal cuts the midnight air'] },
+                { id: 'afterglow-drive', title: 'Afterglow Drive', artist: 'Elara Moon', mood: 'Warm', duration: 198,
+                    quality: 'Spatial', bpm: 105, audioSrc: 'songs/afterglow-drive.mp3',
+                    palette: ['#fb7185', '#f59e0b', '#312e81'], verified: true,
+                    lyrics: ['Sunset bleeding on the road'] },
+                { id: 'velvet-gravity', title: 'Velvet Gravity', artist: 'Kairo Bloom', mood: 'Deep', duration: 251,
+                    quality: 'Lossless', bpm: 85, audioSrc: 'songs/velvet-gravity.mp3',
+                    palette: ['#94a3b8', '#60a5fa', '#020617'], verified: false, lyrics: ['Heavy like velvet'] },
+                { id: 'neon-rainfall', title: 'Neon Rainfall', artist: 'Sera Voss', mood: 'Rainy', duration: 207,
+                    quality: 'Spatial', bpm: 112, audioSrc: 'songs/neon-rainfall.mp3',
+                    palette: ['#34d399', '#06b6d4', '#082f49'], verified: true, lyrics: ['Rain falls in neon streaks'] },
+                { id: 'silent-comet', title: 'Silent Comet', artist: 'Atlas Grey', mood: 'Drifting', duration: 233,
+                    quality: 'Hi-Res', bpm: 72, audioSrc: 'songs/silent-comet.mp3',
                     palette: ['#c4b5fd', '#e0f2fe', '#0f172a'], verified: false,
-                    lyrics: ['A silent comet crosses the sky', 'No one sees it passing by',
-                        'Trailing dust of ancient light', 'Journeying through endless night',
-                        'We are travelers just the same', 'Writing stories without name', 'Drifting through the cosmic sea',
-                        'Searching for what we might be'
-                    ] },
-                { id: 'blue-horizon', title: 'Blue Horizon', artist: 'Luma Ray', album: 'Ocean Above',
-                    genre: 'Progressive', mood: 'Expansive', year: 2026, duration: 219, quality: 'Lossless', bpm: 94,
-                    audioSrc: 'songs/blue-horizon.mp3', coverSrc: 'covers/blue-horizon.jpg',
-                    lyricsSrc: 'lyrics/blue-horizon.lrc', palette: ['#38bdf8', '#0ea5e9', '#020617'], verified: true,
-                    lyrics: ['The ocean hangs above our heads', 'A blue horizon softly spread',
-                        'We float beneath its gentle wave', 'Feeling everything we crave', 'Currents pull us to the shore',
-                        'Of something we have felt before', 'Wide open spaces call our name',
-                        'Nothing here is quite the same'
-                    ] },
-                { id: 'lunar-eclipse', title: 'Lunar Eclipse', artist: 'Nyx Aurora', album: 'Gold In The Shadow',
-                    genre: 'Dark Ambient', mood: 'Nocturne', year: 2026, duration: 245, quality: 'Spatial', bpm: 78,
-                    audioSrc: 'songs/lunar-eclipse.mp3', coverSrc: 'covers/lunar-eclipse.jpg',
-                    lyricsSrc: 'lyrics/lunar-eclipse.lrc', palette: ['#fbbf24', '#8b5cf6', '#030712'], verified: true,
-                    lyrics: ['The moon devours its own light', 'Turning day into the night', 'A golden ring around the void',
-                        'Where all our sorrows are destroyed', 'Shadow moves across the face',
-                        'Of celestial time and space', 'We watch in silence, standing still',
-                        'As darkness bends the light at will'
-                    ] }
+                    lyrics: ['A silent comet crosses the sky'] },
+                { id: 'blue-horizon', title: 'Blue Horizon', artist: 'Luma Ray', mood: 'Expansive', duration: 219,
+                    quality: 'Lossless', bpm: 94, audioSrc: 'songs/blue-horizon.mp3',
+                    palette: ['#38bdf8', '#0ea5e9', '#020617'], verified: true,
+                    lyrics: ['The ocean hangs above our heads'] },
+                { id: 'lunar-eclipse', title: 'Lunar Eclipse', artist: 'Nyx Aurora', mood: 'Nocturne', duration: 245,
+                    quality: 'Spatial', bpm: 78, audioSrc: 'songs/lunar-eclipse.mp3',
+                    palette: ['#fbbf24', '#8b5cf6', '#030712'], verified: true,
+                    lyrics: ['The moon devours its own light'] }
             ];
 
             const state = {
@@ -1448,7 +1285,6 @@
                 userInteracted: false,
                 audioError: false,
                 audioLoading: false,
-                audioReady: false,
                 duration: 0,
                 currentTime: 0,
                 volume: 0.76,
@@ -1458,21 +1294,18 @@
                 liked: {},
                 recent: [],
                 activePanel: null,
-                searchQuery: '',
                 parsedLyricsCache: {},
                 objectUrls: [],
+                performanceProfile: 'high',
                 draggingSeek: false,
-                draggingCarousel: false,
-                activeLyricIndex: -1,
+                carouselDragging: false,
                 carouselDragStartX: 0,
                 carouselDragDelta: 0,
-                carouselDragging: false,
-                lastTimeUpdate: 0,
-                performanceProfile: 'high'
+                activeLyricIndex: -1,
+                lastTimeUpdate: 0
             };
 
-            const $ = (sel) => document.querySelector(sel);
-            const $$ = (sel) => document.querySelectorAll(sel);
+            const $ = (s) => document.querySelector(s);
             const audio = document.getElementById('audio');
 
             function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
@@ -1480,1065 +1313,571 @@
             function formatTime(sec) { const s = Math.floor(sec);
                 const m = Math.floor(s / 60); return m + ':' + String(s % 60).padStart(2, '0'); }
 
-            function getTrack() { return state.tracks[state.currentIndex] || state.tracks[0] || FALLBACK_TRACKS[0]; }
+            function getTrack() { return state.tracks[state.currentIndex] || FALLBACK_TRACKS[0]; }
 
-            function announce(msg) { const el = document.getElementById('announcer'); if (el) el.textContent = msg; }
+            function announce(m) { const el = document.getElementById('announcer'); if (el) el.textContent = m; }
 
-            function showToast(msg) {
-                const container = document.getElementById('toastContainer');
-                const t = document.createElement('div');
+            function showToast(m) { const c = document.getElementById('toastContainer'); const t = document.createElement(
+                    'div');
                 t.className = 'toast';
-                t.textContent = msg;
-                container.appendChild(t);
-                setTimeout(() => t.remove(), 2500);
-            }
+                t.textContent = m;
+                c.appendChild(t);
+                setTimeout(() => t.remove(), 2500); }
 
-            function saveState() {
-                try {
-                    const data = {
-                        currentIndex: state.currentIndex,
-                        volume: state.volume,
-                        muted: state.muted,
-                        shuffle: state.shuffle,
-                        repeat: state.repeat,
-                        liked: state.liked,
-                        recent: state.recent.slice(0, 30),
-                        performanceProfile: state.performanceProfile
-                    };
-                    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-                } catch (e) {}
-            }
+            function saveState() { try { const d = { currentIndex: state.currentIndex, volume: state.volume,
+                        muted: state.muted, shuffle: state.shuffle, repeat: state.repeat, liked: state.liked,
+                        recent: state.recent.slice(0, 30) };
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); } catch (e) {} }
 
-            function loadState() {
-                try {
-                    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-                    if (saved) {
-                        if (typeof saved.currentIndex === 'number') state.currentIndex = saved.currentIndex;
-                        if (typeof saved.volume === 'number') state.volume = clamp(saved.volume, 0, 1);
-                        if (typeof saved.muted === 'boolean') state.muted = saved.muted;
-                        if (typeof saved.shuffle === 'boolean') state.shuffle = saved.shuffle;
-                        if (['off', 'all', 'one'].includes(saved.repeat)) state.repeat = saved.repeat;
-                        if (saved.liked) state.liked = saved.liked;
-                        if (Array.isArray(saved.recent)) state.recent = saved.recent;
-                        if (saved.performanceProfile) state.performanceProfile = saved.performanceProfile;
-                    }
-                } catch (e) {}
-            }
+            function loadState() { try { const s = JSON.parse(localStorage.getItem(STORAGE_KEY)); if (s) { if (
+                            typeof s.currentIndex === 'number') state.currentIndex = s.currentIndex; if (typeof s
+                            .volume === 'number') state.volume = clamp(s.volume, 0, 1); if (typeof s.muted ===
+                            'boolean') state.muted = s.muted; if (typeof s.shuffle === 'boolean') state.shuffle = s
+                        .shuffle; if (['off', 'all', 'one'].includes(s.repeat)) state.repeat = s.repeat; if (s.liked)
+                        state.liked = s.liked; if (Array.isArray(s.recent)) state.recent = s.recent; } } catch (e) {} }
 
-            function detectPerformanceProfile() {
-                let profile = 'high';
-                const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-                const saveData = navigator.connection && navigator.connection.saveData;
-                const memory = navigator.deviceMemory || 4;
-                const width = window.innerWidth;
-                if (reducedMotion || saveData || memory < 4 || width < 700) profile = 'low';
-                else if (memory < 8 || width < 1024) profile = 'medium';
-                state.performanceProfile = profile;
-                document.body.className = document.body.className.replace(/profile-\w+/g, '');
-                document.body.classList.add('profile-' + profile);
-                if (reducedMotion) document.body.classList.add('reduced-motion');
-            }
+            function detectPerformanceProfile() { let p = 'high';
+                const rm = window.matchMedia('(prefers-reduced-motion: reduce)').matches; const sd = navigator.connection &&
+                    navigator.connection.saveData; const mem = navigator.deviceMemory || 4; const w = window.innerWidth; if (
+                    rm || sd || mem < 4 || w < 700) p = 'low'; else if (mem < 8 || w < 1024) p = 'medium';
+                state.performanceProfile = p;
+                document.body.classList.remove('profile-low', 'profile-medium', 'profile-high');
+                document.body.classList.add('profile-' + p); if (rm) document.body.classList.add('reduced-motion'); }
 
-            function setDynamicPalette(track) {
-                const r = document.documentElement;
-                r.style.setProperty('--track-a', track.palette[0]);
-                r.style.setProperty('--track-b', track.palette[1]);
-                r.style.setProperty('--track-c', track.palette[2] || '#020617');
-            }
+            function setDynamicPalette(t) { const r = document.documentElement;
+                r.style.setProperty('--track-a', t.palette[0]);
+                r.style.setProperty('--track-b', t.palette[1]);
+                r.style.setProperty('--track-c', t.palette[2] || '#020617'); }
 
-            function createMiniArtHTML(track) {
-                const p = track.palette;
-                return `<div style="position:absolute;inset:0;background:linear-gradient(135deg,${p[0]},${p[1]});border-radius:inherit"></div>`;
-            }
+            function createMiniArtHTML(t) { const p = t.palette; return (
+                    `<div style="position:absolute;inset:0;background:linear-gradient(135deg,${p[0]},${p[1]});border-radius:inherit"></div>`
+                    ); }
 
-            function buildCardHTML(track, index) {
-                const p = track.palette;
-                const verifiedBadge = track.verified ? '<span class="card-badge verified">✓ VERIFIED</span>' : '';
-                return `
-            <div class="card">
-              <img class="card-cover-img" src="${track.coverSrc||''}" alt="" loading="lazy" onerror="this.style.display='none'" onload="this.style.display='block'">
-              <div class="card-art">
-                <div class="art-layer" style="background:linear-gradient(150deg,${p[0]},${p[1]} 60%,${p[2]||p[0]} 100%)"></div>
-                <div class="card-bottom-gradient"></div>
-              </div>
-              <div class="now-playing-indicator"><span class="now-playing-dot"></span>NOW PLAYING</div>
-              <div class="card-glow-ring"></div>
-              <div class="card-content">
-                <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px"><span class="card-badge">${track.quality||'Spatial'}</span><span class="card-badge">${track.year||2026}</span>${verifiedBadge}</div>
-                <h2 class="card-title">${track.title}</h2>
-                <p class="card-artist">${track.artist}</p>
-              </div>
-            </div>`;
-            }
-
-            function renderCarousel() {
-                const carousel = document.getElementById('carousel');
-                carousel.innerHTML = '';
-                const total = state.tracks.length;
-                const frag = document.createDocumentFragment();
-                for (let i = 0; i < total; i++) {
-                    let offset = i - state.currentIndex;
-                    if (offset > total / 2) offset -= total;
-                    if (offset < -total / 2) offset += total;
-                    const abs = Math.abs(offset);
-                    const card = document.createElement('div');
-                    card.className = 'carousel-card';
-                    if (abs === 0) card.classList.add('active');
-                    else if (abs === 1) card.classList.add('near');
-                    else if (abs === 2) card.classList.add('far');
-                    else card.classList.add('hidden-card');
+            function renderCarousel() { const carousel = document.getElementById('carousel');
+                carousel.innerHTML = ''; const total = state.tracks.length; for (let i = 0; i < total; i++) { let off =
+                        i - state.currentIndex; if (off > total / 2) off -= total; if (off < -total / 2) off += total; const
+                        abs = Math.abs(off); const card = document.createElement('div');
+                    card.className = 'carousel-card'; if (abs === 0) card.classList.add('active'); else if (abs === 1) card
+                        .classList.add('near'); else if (abs === 2) card.classList.add('far'); else card.classList.add(
+                        'hidden-card');
                     card.dataset.index = i;
-                    card.innerHTML = buildCardHTML(state.tracks[i], i);
-                    const isMobile = window.innerWidth <= 699;
-                    const nearX = isMobile ? 150 : 230;
-                    const farX = isMobile ? 280 : 400;
-                    let tx, ry, sc, op;
-                    if (abs === 0) { tx = 0;
+                    card.innerHTML = buildCardHTML(state.tracks[i]); const isMobile = window.innerWidth <= 699; const nearX =
+                        isMobile ? 150 : 230; const farX = isMobile ? 280 : 400; let tx, ry, sc, op; if (abs === 0) { tx =
+                            0;
                         ry = 0;
                         sc = 1;
-                        op = 1; } else if (abs === 1) { tx = offset * nearX;
-                        ry = offset * -28;
+                        op = 1; } else if (abs === 1) { tx = off * nearX;
+                        ry = off * -28;
                         sc = 0.8;
-                        op = 0.72; } else if (abs === 2) { tx = offset * farX;
-                        ry = offset * -42;
+                        op = 0.72; } else if (abs === 2) { tx = off * farX;
+                        ry = off * -42;
                         sc = 0.6;
-                        op = 0.38; } else { tx = offset * (farX + 80);
-                        ry = offset * -50;
+                        op = 0.38; } else { tx = off * (farX + 80);
+                        ry = off * -50;
                         sc = 0.45;
                         op = 0; }
                     card.style.transform = `translate3d(${tx}px,0,0) rotateY(${ry}deg) scale(${sc})`;
                     card.style.opacity = op;
                     card.style.zIndex = 100 - abs;
-                    card.addEventListener('click', function(e) {
-                        if (state.carouselDragging) return;
-                        const idx = parseInt(this.dataset.index);
-                        if (idx === state.currentIndex) togglePlay();
-                        else setTrackByIndex(idx);
-                    });
-                    frag.appendChild(card);
-                }
-                carousel.appendChild(frag);
-            }
+                    card.addEventListener('click', e => { if (state.carouselDragging) return; const idx = parseInt(this.dataset
+                            .index); if (idx === state.currentIndex) togglePlay(); else setTrackByIndex(idx); });
+                    carousel.appendChild(card); } }
 
-            function updatePlayerUI() {
-                const track = getTrack();
-                document.getElementById('playerTitle').textContent = track.title;
-                document.getElementById('playerArtist').textContent = track.artist;
-                document.getElementById('timeDuration').textContent = formatTime(track.duration || state.duration || 0);
-                document.getElementById('navTitle').textContent = track.title;
-                document.getElementById('navArtist').textContent = track.artist;
-                document.getElementById('navBadge').textContent = track.quality || 'SPATIAL';
-                document.getElementById('heroQuality').textContent = track.quality || 'SPATIAL';
-                document.getElementById('heroMood').textContent = (track.mood || 'COSMIC').toUpperCase();
-                document.getElementById('heroBPM').textContent = (track.bpm || 120) + ' BPM';
-                const miniArt = document.getElementById('playerMiniArt');
-                miniArt.innerHTML =
-                    `<img src="${track.coverSrc||''}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:10px" onerror="this.style.display='none'">${createMiniArtHTML(track)}`;
+            function buildCardHTML(t) { const p = t.palette;
+                const vb = t.verified ? '<span class="card-badge verified">✓ VERIFIED</span>' : ''; return `
+            <div class="card">
+              <img class="card-cover-img" src="${t.coverSrc||''}" onerror="this.style.display='none'">
+              <div class="card-art">
+                <div style="position:absolute;inset:0;background:linear-gradient(150deg,${p[0]},${p[1]} 60%,${p[2]||p[0]} 100%)"></div>
+                <div class="card-bottom-gradient"></div>
+              </div>
+              <div class="now-playing-indicator"><span class="now-playing-dot"></span>NOW PLAYING</div>
+              <div class="card-glow-ring"></div>
+              <div class="card-content">
+                <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px"><span class="card-badge">${t.quality||'Spatial'}</span>${vb}</div>
+                <h2 class="card-title">${t.title}</h2>
+                <p class="card-artist">${t.artist}</p>
+              </div>
+            </div>`; }
+
+            function updatePlayerUI() { const t = getTrack();
+                document.getElementById('playerTitle').textContent = t.title;
+                document.getElementById('playerArtist').textContent = t.artist;
+                document.getElementById('timeDuration').textContent = formatTime(t.duration || state.duration || 0);
+                document.getElementById('navTitle').textContent = t.title;
+                document.getElementById('navArtist').textContent = t.artist;
+                document.getElementById('navBadge').textContent = t.quality || 'SPATIAL';
+                document.getElementById('heroQuality').textContent = t.quality || 'SPATIAL';
+                document.getElementById('heroMood').textContent = (t.mood || 'COSMIC').toUpperCase();
+                document.getElementById('heroBPM').textContent = (t.bpm || 120) + ' BPM';
+                document.getElementById('playerMiniArt').innerHTML =
+                    `<img src="${t.coverSrc||''}" onerror="this.style.display='none'">${createMiniArtHTML(t)}`;
                 updateLikeBtn();
                 updateRepeatBtn();
                 updateShuffleBtn();
                 updateMuteBtn();
                 updatePlayBtn();
                 updateProgressDisplay();
-                setDynamicPalette(track);
-            }
+                setDynamicPalette(t); }
 
-            function updateProgressDisplay() {
-                const track = getTrack();
-                const dur = track.duration || state.duration || 1;
-                const pct = dur > 0 ? (state.currentTime / dur) * 100 : 0;
+            function updateProgressDisplay() { const d = getTrack().duration || state.duration || 1; const pct = d > 0 ? (
+                    state.currentTime / d) * 100 : 0;
                 document.getElementById('progressFill').style.width = pct + '%';
                 document.getElementById('timeCurrent').textContent = formatTime(state.currentTime);
-                document.getElementById('progressTrack').setAttribute('aria-valuenow', Math.round(pct));
-            }
+                document.getElementById('progressTrack').setAttribute('aria-valuenow', Math.round(pct)); }
 
-            function updatePlayBtn() {
-                const ip = document.getElementById('iconPlay');
-                const ipa = document.getElementById('iconPause');
-                if (state.isPlaying) { ip.style.display = 'none';
+            function updatePlayBtn() { const ip = document.getElementById('iconPlay'); const ipa = document.getElementById(
+                    'iconPause'); if (state.isPlaying) { ip.style.display = 'none';
                     ipa.style.display = 'block'; } else { ip.style.display = 'block';
-                    ipa.style.display = 'none'; }
-                document.body.classList.toggle('is-playing', state.isPlaying);
-            }
+                    ipa.style.display = 'none'; } }
 
-            function updateLikeBtn() {
-                const track = getTrack();
-                const ih = document.getElementById('iconHeart');
-                const ihf = document.getElementById('iconHeartFilled');
-                const btn = document.getElementById('btnLike');
-                if (track.liked) { ih.style.display = 'none';
+            function updateLikeBtn() { const t = getTrack(); const ih = document.getElementById('iconHeart'); const ihf =
+                    document.getElementById('iconHeartFilled'); const btn = document.getElementById('btnLike'); if (t
+                    .liked) { ih.style.display = 'none';
                     ihf.style.display = 'block';
                     btn.classList.add('liked'); } else { ih.style.display = 'block';
                     ihf.style.display = 'none';
-                    btn.classList.remove('liked'); }
-            }
+                    btn.classList.remove('liked'); } }
 
-            function updateShuffleBtn() {
-                const btn = document.getElementById('btnShuffle');
-                btn.classList.toggle('accent', state.shuffle);
-            }
+            function updateShuffleBtn() { document.getElementById('btnShuffle').classList.toggle('accent', state.shuffle); }
 
-            function updateRepeatBtn() {
-                const btn = document.getElementById('btnRepeat');
-                const badge = document.getElementById('repeatOneBadge');
-                btn.classList.remove('accent');
-                badge.style.display = 'none';
-                if (state.repeat === 'all') btn.classList.add('accent');
-                else if (state.repeat === 'one') { btn.classList.add('accent');
-                    badge.style.display = 'inline'; }
-            }
+            function updateRepeatBtn() { const b = document.getElementById('btnRepeat'); const badge = document
+                    .getElementById('repeatOneBadge');
+                b.classList.remove('accent');
+                badge.style.display = 'none'; if (state.repeat === 'all') b.classList.add('accent'); else if (state
+                    .repeat === 'one') { b.classList.add('accent');
+                    badge.style.display = 'inline'; } }
 
-            function updateMuteBtn() {
-                const iv = document.getElementById('iconVolume');
-                const im = document.getElementById('iconMute');
-                if (state.muted || state.volume === 0) { iv.style.display = 'none';
+            function updateMuteBtn() { const iv = document.getElementById('iconVolume'); const im = document.getElementById(
+                    'iconMute'); if (state.muted || state.volume === 0) { iv.style.display = 'none';
                     im.style.display = 'block'; } else { iv.style.display = 'block';
                     im.style.display = 'none'; }
-                document.getElementById('volumeSlider').value = Math.round(state.volume * 100);
-            }
+                document.getElementById('volumeSlider').value = Math.round(state.volume * 100); }
 
-            function updateAudioStatusBadges() {
-                const lb = document.getElementById('audioLoadingBadge');
-                const eb = document.getElementById('audioErrorBadge');
-                lb.classList.toggle('visible', state.audioLoading && !state.audioError);
-                eb.classList.toggle('visible', state.audioError);
-            }
+            function updateAudioStatusBadges() { document.getElementById('audioLoadingBadge').classList.toggle('visible',
+                    state.audioLoading && !state.audioError);
+                document.getElementById('audioErrorBadge').classList.toggle('visible', state.audioError); }
 
-            function loadAudioForTrack(track) {
-                if (!audio) return;
-                state.audioError = false;
-                state.audioLoading = true;
-                state.audioReady = false;
-                updateAudioStatusBadges();
-                audio.src = track.audioSrc || '';
+            function loadAudio(t) { audio.src = t.audioSrc || '';
                 audio.load();
-            }
+                state.audioLoading = true;
+                state.audioError = false;
+                updateAudioStatusBadges(); }
 
-            function safePlay() {
-                if (!state.userInteracted) { state.userInteracted = true; }
-                const p = audio.play();
-                if (p && p.then) p.catch(e => { state.isPlaying = false;
+            function safePlay() { if (!state.userInteracted) state.userInteracted = true;
+                audio.play().catch(() => { state.isPlaying = false;
                     updatePlayBtn(); });
                 state.isPlaying = true;
-                updatePlayBtn();
-            }
+                updatePlayBtn(); }
 
-            function safePause() {
-                audio.pause();
-                state.isPlaying = false;
-                updatePlayBtn();
-            }
+            function togglePlay() { if (state.isPlaying) { audio.pause();
+                    state.isPlaying = false; } else safePlay();
+                updatePlayBtn(); }
 
-            function togglePlay() {
-                if (state.isPlaying) safePause();
-                else safePlay();
-            }
-
-            function setTrackByIndex(index) {
-                if (index < 0 || index >= state.tracks.length) return;
-                state.currentIndex = index;
+            function setTrackByIndex(idx) { if (idx < 0 || idx >= state.tracks.length) return;
+                state.currentIndex = idx;
                 state.currentTime = 0;
                 state.activeLyricIndex = -1;
-                const track = state.tracks[index];
-                if (!state.recent.includes(track.id)) { state.recent.unshift(track.id);
-                    state.recent = state.recent.slice(0, 30); }
+                const t = state.tracks[idx];
+                state.recent.unshift(t.id);
+                state.recent = state.recent.slice(0, 30);
                 updatePlayerUI();
                 renderCarousel();
-                renderQueuePanel();
-                renderLyricsPanel();
-                loadAudioForTrack(track);
+                renderQueue();
+                renderLyrics();
+                loadAudio(t);
                 saveState();
-                announce(`Now playing: ${track.title} by ${track.artist}`);
-                if (state.isPlaying) { safePlay(); }
-            }
+                announce(`Now playing ${t.title} by ${t.artist}`); if (state.isPlaying) safePlay(); }
 
-            function nextTrack() {
-                let next;
-                if (state.shuffle) {
-                    do { next = Math.floor(Math.random() * state.tracks.length); } while (next === state.currentIndex && state
-                        .tracks.length > 1);
-                } else { next = (state.currentIndex + 1) % state.tracks.length; }
-                setTrackByIndex(next);
-            }
+            function nextTrack() { let next; if (state.shuffle) { do next = Math.floor(Math.random() * state.tracks
+                        .length); while (next === state.currentIndex && state.tracks.length > 1); } else next = (state
+                    .currentIndex + 1) % state.tracks.length;
+                setTrackByIndex(next); }
 
-            function prevTrack() {
-                if (state.currentTime > 3) { audio.currentTime = 0;
+            function prevTrack() { if (state.currentTime > 3) { audio.currentTime = 0;
                     state.currentTime = 0;
-                    updateProgressDisplay(); return; }
-                let prev;
-                if (state.shuffle) {
-                    do { prev = Math.floor(Math.random() * state.tracks.length); } while (prev === state.currentIndex && state
-                        .tracks.length > 1);
-                } else { prev = (state.currentIndex - 1 + state.tracks.length) % state.tracks.length; }
-                setTrackByIndex(prev);
-            }
+                    updateProgressDisplay(); return; } let prev; if (state.shuffle) { do prev = Math.floor(Math.random() *
+                        state.tracks.length); while (prev === state.currentIndex && state.tracks.length > 1); } else prev =
+                    (state.currentIndex - 1 + state.tracks.length) % state.tracks.length;
+                setTrackByIndex(prev); }
 
-            function seekTo(percent) {
-                const track = getTrack();
-                const dur = track.duration || state.duration || 1;
-                state.currentTime = clamp(percent, 0, 1) * dur;
+            function seekTo(percent) { const d = getTrack().duration || state.duration || 1;
+                state.currentTime = clamp(percent, 0, 1) * d;
                 audio.currentTime = state.currentTime;
-                updateProgressDisplay();
-            }
+                updateProgressDisplay(); }
 
-            function setVolume(value) {
-                state.volume = clamp(value, 0, 1);
-                if (state.volume > 0) state.muted = false;
+            function setVolume(v) { state.volume = clamp(v, 0, 1); if (state.volume > 0) state.muted = false;
                 audio.volume = state.muted ? 0 : state.volume;
                 updateMuteBtn();
-                saveState();
-            }
+                saveState(); }
 
-            function toggleMute() {
-                state.muted = !state.muted;
+            function toggleMute() { state.muted = !state.muted;
                 audio.volume = state.muted ? 0 : state.volume;
                 updateMuteBtn();
-                saveState();
-            }
+                saveState(); }
 
-            function toggleShuffle() {
-                state.shuffle = !state.shuffle;
+            function toggleShuffle() { state.shuffle = !state.shuffle;
                 updateShuffleBtn();
-                saveState();
-            }
+                saveState(); }
 
-            function cycleRepeat() {
-                if (state.repeat === 'off') state.repeat = 'all';
-                else if (state.repeat === 'all') state.repeat = 'one';
-                else state.repeat = 'off';
+            function cycleRepeat() { if (state.repeat === 'off') state.repeat = 'all'; else if (state.repeat === 'all')
+                    state.repeat = 'one'; else state.repeat = 'off';
                 updateRepeatBtn();
-                saveState();
-            }
+                saveState(); }
 
-            function toggleLike() {
-                const track = getTrack();
-                track.liked = !track.liked;
-                state.liked[track.id] = track.liked;
+            function toggleLike() { const t = getTrack();
+                t.liked = !t.liked;
+                state.liked[t.id] = t.liked;
                 updateLikeBtn();
-                saveState();
-            }
+                saveState(); }
 
-            function parseLRC(text) {
-                const lines = text.split(/\r?\n/);
-                const result = [];
-                const re = /\[(\d{1,3}):(\d{2})(?:\.(\d{1,3}))?\]/;
-                for (const line of lines) {
-                    const m = line.match(re);
-                    if (m) {
-                        const mins = parseInt(m[1]);
-                        const secs = parseInt(m[2]);
-                        const ms = m[3] ? parseInt(m[3].padEnd(3, '0')) / 1000 : 0;
-                        const time = mins * 60 + secs + ms;
-                        const text = line.replace(re, '').trim();
-                        if (text) result.push({ time, text });
-                    }
-                }
-                result.sort((a, b) => a.time - b.time);
-                return result.length > 0 ? result : null;
-            }
+            function parseLRC(text) { const lines = text.split(/\r?\n/); const res = []; const re =
+                    /\[(\d{1,3}):(\d{2})(?:\.(\d{1,3}))?\]/; for (const l of lines) { const m = l.match(re); if (m) { const
+                            mins = parseInt(m[1]); const secs = parseInt(m[2]); const ms = m[3] ? parseInt(m[3].padEnd(3,
+                            '0')) / 1000 : 0; const time = mins * 60 + secs + ms; const text = l.replace(re, '')
+                        .trim(); if (text) res.push({ time, text }); } }
+                res.sort((a, b) => a.time - b.time); return res; }
 
-            function getLyricsForTrack(track) {
-                if (state.parsedLyricsCache[track.id]) return state.parsedLyricsCache[track.id];
-                let parsed = null;
-                if (track.lyrics && track.lyrics.length > 0) {
-                    parsed = track.lyrics.map((text, i) => ({ time: (i / track.lyrics.length) * (track.duration || 180),
-                        text }));
-                }
-                state.parsedLyricsCache[track.id] = parsed;
-                return parsed;
-            }
+            function getLyricsData(t) { if (state.parsedLyricsCache[t.id]) return state.parsedLyricsCache[t.id]; let parsed =
+                    null; if (t.lyrics && t.lyrics.length) { parsed = t.lyrics.map((text, i) => ({ time: (i / t.lyrics
+                            .length) * (t.duration || 180), text })); }
+                state.parsedLyricsCache[t.id] = parsed; return parsed; }
 
-            function renderLyricsPanel() {
-                const content = document.getElementById('lyricsContent');
-                if (!content) return;
-                const track = getTrack();
-                const lyrics = getLyricsForTrack(track);
-                let html = '';
-                if (lyrics && lyrics.length) {
-                    lyrics.forEach((l, i) => {
-                        html += `<div class="lyric-line" data-index="${i}">${l.text}</div>`;
-                    });
-                } else {
-                    html = '<div style="padding:40px;text-align:center;color:var(--muted)">No lyrics available</div>';
-                }
-                content.innerHTML = html;
+            function renderLyrics() { const content = document.getElementById('lyricsContent'); const data = getLyricsData(
+                    getTrack()); if (!data || !data.length) { content.innerHTML =
+                    '<div style="padding:40px;text-align:center;color:var(--muted)">No lyrics</div>'; return; }
+                content.innerHTML = data.map((l, i) => `<div class="lyric-line" data-idx="${i}">${l.text}</div>`).join(
+                    '');
                 state.activeLyricIndex = -1;
-                updateActiveLyric();
-            }
+                updateActiveLyric(); }
 
-            function updateActiveLyric() {
-                const lines = document.querySelectorAll('#lyricsContent .lyric-line');
-                if (!lines.length) return;
-                const track = getTrack();
-                const lyrics = getLyricsForTrack(track);
-                if (!lyrics || !lyrics.length) return;
-                let activeIdx = -1;
-                for (let i = lyrics.length - 1; i >= 0; i--) {
-                    if (state.currentTime >= lyrics[i].time) { activeIdx = i; break; }
-                }
-                if (activeIdx === state.activeLyricIndex) return;
-                state.activeLyricIndex = activeIdx;
-                lines.forEach((l, i) => {
-                    l.classList.remove('active', 'prev');
-                    if (i === activeIdx) l.classList.add('active');
-                    else if (i < activeIdx) l.classList.add('prev');
-                });
-                if (activeIdx >= 0 && lines[activeIdx]) {
-                    lines[activeIdx].scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
-            }
+            function updateActiveLyric() { const lines = document.querySelectorAll('#lyricsContent .lyric-line'); if (!lines
+                    .length) return; const data = getLyricsData(getTrack()); let idx = -1; for (let i = data.length - 1; i >=
+                    0; i--) { if (state.currentTime >= data[i].time) { idx = i; break; } } if (idx === state
+                    .activeLyricIndex) return;
+                state.activeLyricIndex = idx;
+                lines.forEach((l, i) => { l.classList.remove('active', 'prev'); if (i === idx) l.classList.add('active');
+                    else if (i < idx) l.classList.add('prev'); }); if (idx >= 0) lines[idx].scrollIntoView({ behavior: 'smooth',
+                    block: 'center' }); }
 
-            function renderQueuePanel() {
-                const list = document.getElementById('queueList');
-                if (!list) return;
-                let html = '';
-                state.tracks.forEach((t, i) => {
-                    const isActive = i === state.currentIndex;
-                    html += `
-                <div class="queue-item${isActive?' active':''}" data-index="${i}">
-                  <div class="search-mini-art">${createMiniArtHTML(t)}</div>
-                  <div style="flex:1;min-width:0"><div style="font-weight:600;font-size:12px;color:#fff">${t.title}</div><div style="font-size:10px;color:var(--muted)">${t.artist}</div></div>
-                  <span style="font-size:10px;color:var(--faint)">${formatTime(t.duration||0)}</span>
-                </div>`;
-                });
-                list.innerHTML = html;
-                list.querySelectorAll('.queue-item').forEach(item => {
-                    item.addEventListener('click', function() {
-                        const idx = parseInt(this.dataset.index);
-                        if (!isNaN(idx)) {
-                            setTrackByIndex(idx);
-                            if (window.innerWidth <= 699) closePanel('queue');
-                        }
-                    });
-                });
-            }
-
-            function renderSearchResults(query) {
-                const container = document.getElementById('searchResults');
-                if (!container) return;
-                let results;
-                if (!query || query.trim() === '') {
-                    results = state.tracks.slice(0, 6);
-                } else {
-                    const q = query.toLowerCase().trim();
-                    results = state.tracks.filter(t => t.title.toLowerCase().includes(q) || t.artist.toLowerCase()
-                        .includes(q) || (t.album || '').toLowerCase().includes(q));
-                }
-                container.innerHTML = results.map(t => `
-            <div class="search-result-item" data-index="${state.tracks.indexOf(t)}">
+            function renderQueue() { const list = document.getElementById('queueList');
+                list.innerHTML = state.tracks.map((t, i) => `
+            <div class="queue-item${i===state.currentIndex?' active':''}" data-idx="${i}">
               <div class="search-mini-art">${createMiniArtHTML(t)}</div>
-              <div style="flex:1;min-width:0"><div class="search-result-title">${t.title}</div><div class="search-result-artist">${t.artist} · ${t.album||''}</div></div>
-            </div>`).join('') || '<div style="padding:30px;text-align:center;color:var(--muted)">No results</div>';
-                container.querySelectorAll('.search-result-item').forEach(item => {
-                    item.addEventListener('click', function() {
-                        const idx = parseInt(this.dataset.index);
-                        if (!isNaN(idx)) {
-                            setTrackByIndex(idx);
-                            closePanel('search');
-                        }
-                    });
-                });
-            }
-
-            function renderLibraryPanel() {
-                const grid = document.getElementById('libraryGrid');
-                if (!grid) return;
-                const playlists = [
-                    { icon: '🌌', title: 'Cosmic Focus', idx: 0 },
-                    { icon: '💎', title: 'Glass Atmospheres', idx: 1 },
-                    { icon: '❤️', title: 'Favorites', idx: -1, action: 'liked' },
-                    { icon: '✅', title: 'Verified Artists', idx: -1, action: 'verified' }
-                ];
-                grid.innerHTML = playlists.map(p => `
-            <div class="library-card" data-action="${p.action||''}" data-idx="${p.idx}">
-              <div style="font-size:22px">${p.icon}</div>
-              <div style="font-weight:600;font-size:12px;color:#fff">${p.title}</div>
+              <div style="flex:1"><div style="font-weight:600;font-size:12px">${t.title}</div><div style="font-size:10px;color:var(--muted)">${t.artist}</div></div>
+              <span style="font-size:10px;color:var(--faint)">${formatTime(t.duration||0)}</span>
             </div>`).join('');
-                grid.querySelectorAll('.library-card').forEach(card => {
-                    card.addEventListener('click', function() {
-                        const action = this.dataset.action;
-                        const idx = parseInt(this.dataset.idx);
-                        if (action === 'liked') {
-                            const liked = state.tracks.filter(t => t.liked);
-                            if (liked.length) setTrackByIndex(state.tracks.indexOf(liked[0]));
-                        } else if (action === 'verified') {
-                            const ver = state.tracks.filter(t => t.verified);
-                            if (ver.length) setTrackByIndex(state.tracks.indexOf(ver[0]));
-                        } else if (!isNaN(idx) && idx >= 0 && idx < state.tracks.length) {
-                            setTrackByIndex(idx);
-                        }
-                        closePanel('library');
-                    });
-                });
-            }
+                list.querySelectorAll('.queue-item').forEach(el => el.addEventListener('click', function() { const idx =
+                        parseInt(this.dataset.idx);
+                    setTrackByIndex(idx); if (window.innerWidth <= 699) closePanel('queue'); })); }
 
-            function openPanel(name) {
-                const panelMap = {
-                    search: 'searchOverlay',
-                    queue: 'queuePanel',
-                    lyrics: 'lyricsPanel',
-                    library: 'libraryPanel',
-                    creator: 'creatorPanel'
-                };
-                const el = document.getElementById(panelMap[name]);
-                if (!el) return;
+            function renderSearch(q) { const res = document.getElementById('searchResults'); const list = q ? state.tracks
+                    .filter(t => [t.title, t.artist, t.album, t.genre, t.mood].some(f => (f || '').toLowerCase()
+                        .includes(q.toLowerCase()))) : state.tracks.slice(0, 6);
+                res.innerHTML = list.map(t => `
+            <div class="search-result-item" data-idx="${state.tracks.indexOf(t)}">
+              <div class="search-mini-art">${createMiniArtHTML(t)}</div>
+              <div style="flex:1"><div style="font-weight:600;font-size:13px">${t.title}</div><div style="font-size:10px;color:var(--muted)">${t.artist}</div></div>
+            </div>`).join('') || '<div style="padding:30px;text-align:center;color:var(--muted)">No results</div>';
+                res.querySelectorAll('.search-result-item').forEach(el => el.addEventListener('click', function() { const idx =
+                        parseInt(this.dataset.idx);
+                    setTrackByIndex(idx);
+                    closePanel('search'); })); }
+
+            function openPanel(name) { const map = { search: 'searchOverlay', queue: 'queuePanel', lyrics: 'lyricsPanel',
+                    library: 'libraryPanel', creator: 'creatorPanel' }; const el = document.getElementById(map[name]); if (
+                    !el) return;
                 closeAllPanels();
                 el.classList.add('open');
                 document.getElementById('overlayBackdrop').classList.add('visible');
-                state.activePanel = name;
-                if (name === 'search') { document.getElementById('searchInput').value = '';
-                    renderSearchResults(''); }
-                if (name === 'queue') renderQueuePanel();
-                if (name === 'lyrics') renderLyricsPanel();
-                if (name === 'library') renderLibraryPanel();
-            }
+                state.activePanel = name; if (name === 'search') { document.getElementById('searchInput').value = '';
+                    renderSearch(''); } if (name === 'queue') renderQueue(); if (name === 'lyrics') renderLyrics(); if (
+                    name === 'library') renderLibrary(); }
 
-            function closePanel(name) {
-                const panelMap = {
-                    search: 'searchOverlay',
-                    queue: 'queuePanel',
-                    lyrics: 'lyricsPanel',
-                    library: 'libraryPanel',
-                    creator: 'creatorPanel'
-                };
-                const el = document.getElementById(panelMap[name]);
-                if (!el) return;
-                el.classList.remove('open');
-                if (state.activePanel === name) state.activePanel = null;
-                document.getElementById('overlayBackdrop').classList.remove('visible');
-            }
-
-            function closeAllPanels() {
-                ['searchOverlay', 'queuePanel', 'lyricsPanel', 'libraryPanel', 'creatorPanel'].forEach(id => {
-                    const el = document.getElementById(id);
-                    if (el) el.classList.remove('open');
-                });
+            function closePanel(name) { const map = { search: 'searchOverlay', queue: 'queuePanel', lyrics: 'lyricsPanel',
+                    library: 'libraryPanel', creator: 'creatorPanel' }; const el = document.getElementById(map[name]); if (
+                    el) el.classList.remove('open');
                 state.activePanel = null;
-                document.getElementById('overlayBackdrop').classList.remove('visible');
+                document.getElementById('overlayBackdrop').classList.remove('visible'); }
+
+            function closeAllPanels() { ['searchOverlay', 'queuePanel', 'lyricsPanel', 'libraryPanel', 'creatorPanel']
+                    .forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('open'); });
+                state.activePanel = null;
+                document.getElementById('overlayBackdrop').classList.remove('visible'); }
+
+            function renderLibrary() { const grid = document.getElementById('libraryGrid');
+                grid.innerHTML = [{ icon: '🌌', title: 'Cosmic Focus', idx: 0 }, { icon: '💎', title: 'Glass Atmospheres',
+                        idx: 1 }, { icon: '❤️', title: 'Favorites', act: 'liked' }, { icon: '✅',
+                        title: 'Verified Artists', act: 'verified' }
+                ].map(p => `
+            <div class="library-card" data-act="${p.act||''}" data-idx="${p.idx||''}">
+              <div style="font-size:22px">${p.icon}</div>
+              <div style="font-weight:600;font-size:12px">${p.title}</div>
+            </div>`).join('');
+                grid.querySelectorAll('.library-card').forEach(c => c.addEventListener('click', function() { const act = this
+                        .dataset.act; if (act === 'liked') { const liked = state.tracks.filter(t => t.liked); if (
+                            liked.length) setTrackByIndex(state.tracks.indexOf(liked[0])); } else if (act ===
+                        'verified') { const ver = state.tracks.filter(t => t.verified); if (ver.length)
+                        setTrackByIndex(state.tracks.indexOf(ver[0])); } else { const idx = parseInt(this.dataset
+                        .idx); if (!isNaN(idx)) setTrackByIndex(idx); }
+                    closePanel('library'); })); }
+
+            async function parseAudioMetadata(file) {
+                const res = { title: '', artist: '', album: '', genre: '', year: '', bpm: '', duration: 0, coverBlob: null,
+                    coverUrl: '', quality: 'Imported', palette: ['#38d7ff', '#2563eb', '#020617'] };
+                const fn = file.name.replace(/\.[^.]+$/, '').replace(/_/g, ' ').trim().replace(/^\d+[\s.-]+/, '');
+                const parts = fn.split(/ - | – | — |-/);
+                res.title = parts.length >= 2 ? parts[1].trim() : fn;
+                res.artist = parts.length >= 2 ? parts[0].trim() : 'Unknown';
+                if (file.type.includes('mpeg') || file.name.endsWith('.mp3')) {
+                    const slice = file.slice(0, 4 * 1024 * 1024);
+                    const buf = await slice.arrayBuffer();
+                    const id3 = parseID3v2(buf);
+                    if (id3) {
+                        if (id3.title) res.title = id3.title;
+                        if (id3.artist) res.artist = id3.artist;
+                        if (id3.album) res.album = id3.album;
+                        if (id3.genre) res.genre = id3.genre;
+                        if (id3.year) res.year = id3.year;
+                        if (id3.bpm) res.bpm = id3.bpm;
+                        if (id3.coverBytes) {
+                            const blob = new Blob([id3.coverBytes], { type: id3.coverMime || 'image/jpeg' });
+                            res.coverBlob = blob;
+                            res.coverUrl = URL.createObjectURL(blob);
+                            state.objectUrls.push(res.coverUrl);
+                        }
+                    }
+                }
+                const audioTemp = new Audio();
+                audioTemp.src = URL.createObjectURL(file);
+                state.objectUrls.push(audioTemp.src);
+                await new Promise(r => { audioTemp.addEventListener('loadedmetadata', () => { res.duration = audioTemp
+                            .duration || 0;
+                        r(); });
+                    audioTemp.addEventListener('error', () => r());
+                    setTimeout(() => r(), 2000); });
+                if (!res.quality || res.quality === 'Imported') {
+                    const ext = file.name.split('.').pop().toLowerCase();
+                    if (ext === 'flac') res.quality = 'Lossless';
+                    else if (ext === 'wav') res.quality = 'Studio WAV';
+                    else if (ext === 'ogg') res.quality = 'OGG';
+                    else if (ext === 'm4a' || ext === 'aac') res.quality = 'AAC';
+                    else if (res.duration && file.size) {
+                        const kbps = file.size * 8 / res.duration / 1000;
+                        if (kbps > 900) res.quality = 'Hi-Res';
+                        else if (kbps > 280) res.quality = 'MP3 320';
+                    }
+                }
+                return res;
             }
 
-            function parseID3v2(buffer) {
+            function parseID3v2(buf) {
                 try {
-                    const view = new DataView(buffer);
-                    if (view.getUint32(0) !== 0x494433) return null; // "ID3"
-                    const ver = view.getUint8(3);
-                    if (ver < 3 || ver > 4) return null;
-                    const flags = view.getUint8(5);
-                    const size = ((view.getUint8(6) & 0x7f) << 21) | ((view.getUint8(7) & 0x7f) << 14) | ((view
-                        .getUint8(8) & 0x7f) << 7) | (view.getUint8(9) & 0x7f);
-                    let offset = 10;
-                    const end = offset + size;
-                    if (end > buffer.byteLength) return null;
-                    const meta = { title: '', artist: '', album: '', genre: '', year: '', coverMime: '',
-                        coverBytes: null };
-                    const textDecoder = new TextDecoder();
-                    while (offset + 10 <= end) {
-                        const frameId = String.fromCharCode(view.getUint8(offset), view.getUint8(offset + 1), view.getUint8(
-                            offset + 2), view.getUint8(offset + 3));
-                        const frameSize = view.getUint32(offset + 4);
-                        if (frameSize <= 0 || offset + 10 + frameSize > end) break;
-                        const headerSize = 10;
-                        const frameData = new Uint8Array(buffer, offset + headerSize, frameSize);
-                        if (frameId === 'TIT2') meta.title = parseTextFrame(frameData, textDecoder);
-                        else if (frameId === 'TPE1') meta.artist = parseTextFrame(frameData, textDecoder);
-                        else if (frameId === 'TALB') meta.album = parseTextFrame(frameData, textDecoder);
-                        else if (frameId === 'TCON') meta.genre = parseTextFrame(frameData, textDecoder);
-                        else if (frameId === 'TDRC' || frameId === 'TYER') meta.year = parseTextFrame(frameData,
-                            textDecoder);
-                        else if (frameId === 'APIC') {
-                            const pic = parseAPIC(frameData);
-                            if (pic) { meta.coverMime = pic.mime;
-                                meta.coverBytes = pic.bytes; }
+                    const dv = new DataView(buf);
+                    if (dv.getUint32(0) !== 0x494433) return null;
+                    const ver = dv.getUint8(3);
+                    const flags = dv.getUint8(5);
+                    const size = ((dv.getUint8(6) & 0x7f) << 21) | ((dv.getUint8(7) & 0x7f) << 14) | ((dv.getUint8(8) & 0x7f) <<
+                        7) | (dv.getUint8(9) & 0x7f);
+                    let off = 10;
+                    const end = off + size;
+                    if (end > buf.byteLength) return null;
+                    const meta = { coverMime: '', coverBytes: null };
+                    const dec = new TextDecoder();
+                    while (off + 10 <= end) {
+                        const id = String.fromCharCode(dv.getUint8(off), dv.getUint8(off + 1), dv.getUint8(off + 2), dv
+                        .getUint8(off + 3));
+                        const fsize = dv.getUint32(off + 4);
+                        if (fsize <= 0 || off + 10 + fsize > end) break;
+                        const data = new Uint8Array(buf, off + 10, fsize);
+                        if (id === 'TIT2') meta.title = decodeID3Text(data, dec);
+                        else if (id === 'TPE1') meta.artist = decodeID3Text(data, dec);
+                        else if (id === 'TALB') meta.album = decodeID3Text(data, dec);
+                        else if (id === 'TCON') meta.genre = decodeID3Text(data, dec);
+                        else if (id === 'TDRC' || id === 'TYER') meta.year = decodeID3Text(data, dec);
+                        else if (id === 'TBPM') meta.bpm = decodeID3Text(data, dec);
+                        else if (id === 'APIC') {
+                            const apic = parseAPIC(data);
+                            if (apic) { meta.coverMime = apic.mime;
+                                meta.coverBytes = apic.bytes; }
                         }
-                        offset += headerSize + frameSize;
+                        off += 10 + fsize;
                     }
                     return meta;
                 } catch (e) { return null; }
             }
 
-            function parseTextFrame(data, decoder) {
-                if (data.length < 2) return '';
-                const enc = data[0];
-                let text = '';
-                if (enc === 0x01 || enc === 0x02) {
-                    try { text = new TextDecoder('utf-16').decode(data.slice(1)); } catch (e) { text = decoder.decode(data
-                            .slice(1)); }
-                } else { text = decoder.decode(data.slice(1)); }
-                return text.replace(/\0/g, '').trim();
-            }
+            function decodeID3Text(data, dec) { if (data.length < 2) return ''; const enc = data[0]; try { if (enc === 1 || enc ===
+                    2) return new TextDecoder('utf-16').decode(data.slice(1)).replace(/\0/g, '').trim(); } catch (e) {} return dec
+                    .decode(data.slice(1)).replace(/\0/g, '').trim(); }
 
             function parseAPIC(data) {
-                if (data.length < 10) return null;
                 let idx = 1;
-                const mimeEnd = Array.prototype.indexOf.call(data, 0, idx);
-                if (mimeEnd === -1) return null;
-                const mime = new TextDecoder().decode(data.slice(idx, mimeEnd));
+                const mimeEnd = Array.prototype.indexOf.call(data, 0, idx); if (mimeEnd === -1) return null; const mime = new
+                    TextDecoder().decode(data.slice(idx, mimeEnd));
                 idx = mimeEnd + 2;
-                const descEnd = Array.prototype.indexOf.call(data, 0, idx);
-                if (descEnd === -1) return null;
+                const descEnd = Array.prototype.indexOf.call(data, 0, idx); if (descEnd === -1) return null;
                 idx = descEnd + 1;
-                const bytes = data.slice(idx);
-                return { mime, bytes };
+                const bytes = data.slice(idx); return { mime, bytes };
             }
 
-            function parseFilename(fileName) {
-                let name = fileName.replace(/\.[^.]+$/, '').replace(/_/g, ' ').trim();
-                name = name.replace(/^\d+[\s.-]+/, '');
-                const separators = [' - ', ' – ', ' — ', '-'];
-                for (const sep of separators) {
-                    if (name.includes(sep)) {
-                        const parts = name.split(sep);
-                        if (parts.length === 2) return { artist: parts[0].trim(), title: parts[1].trim() };
-                        if (parts.length >= 3) return { artist: parts[0].trim(), album: parts[1].trim(), title: parts[2]
-                                .trim() };
-                    }
-                }
-                return { title: name, artist: 'Unknown Artist' };
-            }
-
-            async function parseAudioMetadataFromFile(file) {
-                const result = { title: '', artist: '', album: '', genre: '', year: '', bpm: '', duration: 0,
-                    coverBlob: null, coverUrl: '', palette: ['#38d7ff', '#2563eb', '#020617'], sourceMap: {} };
-                const fn = parseFilename(file.name);
-                result.title = fn.title || file.name;
-                result.artist = fn.artist || 'Unknown Artist';
-                if (fn.album) result.album = fn.album;
-                if (file.type.startsWith('audio/mpeg')) {
-                    const slice = file.slice(0, 2 * 1024 * 1024);
-                    const buffer = await slice.arrayBuffer();
-                    const id3 = parseID3v2(buffer);
-                    if (id3) {
-                        if (id3.title) result.title = id3.title;
-                        if (id3.artist) result.artist = id3.artist;
-                        if (id3.album) result.album = id3.album;
-                        if (id3.genre) result.genre = id3.genre;
-                        if (id3.year) result.year = id3.year;
-                        if (id3.coverBytes) {
-                            const blob = new Blob([id3.coverBytes], { type: id3.coverMime || 'image/jpeg' });
-                            result.coverBlob = blob;
-                            result.coverUrl = URL.createObjectURL(blob);
-                            state.objectUrls.push(result.coverUrl);
-                        }
-                    }
-                }
-                const tempAudio = new Audio();
-                tempAudio.src = URL.createObjectURL(file);
-                state.objectUrls.push(tempAudio.src);
-                return new Promise(resolve => {
-                    tempAudio.addEventListener('loadedmetadata', () => {
-                        result.duration = tempAudio.duration || 0;
-                        resolve(result);
-                    });
-                    tempAudio.addEventListener('error', () => resolve(result));
-                    setTimeout(() => resolve(result), 2000);
-                });
-            }
-
-            function generateSlug(title) {
-                return (title || 'track').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-            }
-
-            async function handleFileSelect() {
-                const file = document.getElementById('cfAudio').files[0];
-                if (!file) return;
-                const meta = await parseAudioMetadataFromFile(file);
+            async function handleFileSelect() { const file = document.getElementById('cfAudio').files[0]; if (!file) return;
+                const meta = await parseAudioMetadata(file);
                 document.getElementById('cfTitle').value = meta.title;
                 document.getElementById('cfArtist').value = meta.artist;
-                document.getElementById('cfAlbum').value = meta.album || '';
-                document.getElementById('cfGenre').value = meta.genre || '';
+                document.getElementById('cfAlbum').value = meta.album;
+                document.getElementById('cfGenre').value = meta.genre;
                 document.getElementById('cfYear').value = meta.year || '2026';
-                document.getElementById('cfQuality').value = 'Spatial';
-                if (meta.coverUrl) {
-                    const coverInput = document.getElementById('cfCover');
-                    const dt = new DataTransfer();
-                    if (meta.coverBlob) dt.items.add(new File([meta.coverBlob], 'cover.jpg', { type: meta.coverBlob.type ||
-                            'image/jpeg' }));
-                    coverInput.files = dt.files;
-                }
-                window._tempMeta = meta;
-            }
+                document.getElementById('cfQuality').value = meta.quality || 'Imported'; if (meta.coverUrl) { const dt = new
+                        DataTransfer(); if (meta.coverBlob) dt.items.add(new File([meta.coverBlob], 'cover.jpg', { type: meta
+                                .coverBlob.type || 'image/jpeg' }));
+                    document.getElementById('cfCover').files = dt.files; }
+                window._tempMeta = meta; }
 
-            async function addImportedTrack() {
-                const file = document.getElementById('cfAudio').files[0];
-                if (!file) { showToast('Select an audio file first'); return; }
-                const meta = window._tempMeta || await parseAudioMetadataFromFile(file);
-                const title = document.getElementById('cfTitle').value.trim() || meta.title;
-                const artist = document.getElementById('cfArtist').value.trim() || meta.artist;
-                const album = document.getElementById('cfAlbum').value.trim() || meta.album || '';
-                const genre = document.getElementById('cfGenre').value.trim() || meta.genre || '';
-                const year = document.getElementById('cfYear').value.trim() || meta.year || '2026';
-                const quality = document.getElementById('cfQuality').value;
-                const coverFile = document.getElementById('cfCover').files[0];
-                let coverSrc = meta.coverUrl || '';
-                if (coverFile) {
-                    if (coverSrc) URL.revokeObjectURL(coverSrc);
-                    coverSrc = URL.createObjectURL(coverFile);
-                    state.objectUrls.push(coverSrc);
-                }
-                const lyricsFile = document.getElementById('cfLyrics').files[0];
-                let lyricsArr = [];
-                if (lyricsFile) {
-                    const text = await lyricsFile.text();
-                    const parsed = parseLRC(text);
-                    lyricsArr = parsed ? parsed.map(l => l.text) : text.split(/\r?\n/).filter(l => l.trim());
-                }
-                const slug = generateSlug(title);
-                const newTrack = {
-                    id: 'imported-' + Date.now(),
-                    title,
-                    artist,
-                    album,
-                    genre,
+            async function addImportedTrack() { const file = document.getElementById('cfAudio').files[0]; if (!file) { showToast(
+                        'Select an audio file first'); return; } const meta = window._tempMeta || await
+                    parseAudioMetadata(file); const t = {
+                    id: 'imp-' + Date.now(),
+                    title: document.getElementById('cfTitle').value.trim() || meta.title,
+                    artist: document.getElementById('cfArtist').value.trim() || meta.artist,
+                    album: document.getElementById('cfAlbum').value.trim() || meta.album,
+                    genre: document.getElementById('cfGenre').value.trim() || meta.genre,
                     mood: '',
-                    year: parseInt(year) || 2026,
-                    duration: meta.duration || 0,
-                    quality,
+                    year: parseInt(document.getElementById('cfYear').value) || 2026,
+                    duration: meta.duration,
+                    quality: document.getElementById('cfQuality').value,
                     bpm: 120,
                     audioSrc: URL.createObjectURL(file),
-                    coverSrc,
-                    lyricsSrc: '',
+                    coverSrc: meta.coverUrl || '',
                     palette: ['#38d7ff', '#2563eb', '#020617'],
                     verified: false,
-                    lyrics: lyricsArr,
+                    lyrics: [],
                     isImported: true
                 };
-                state.objectUrls.push(newTrack.audioSrc);
-                state.tracks.push(newTrack);
+                const coverFile = document.getElementById('cfCover').files[0]; if (coverFile) { if (t.coverSrc) URL
+                        .revokeObjectURL(t.coverSrc);
+                    t.coverSrc = URL.createObjectURL(coverFile); }
+                state.objectUrls.push(t.audioSrc, t.coverSrc);
+                state.tracks.push(t);
                 setTrackByIndex(state.tracks.length - 1);
                 closePanel('creator');
-                showToast(`Added: ${title} (temporary session)`);
-            }
+                showToast('Added: ' + t.title); }
 
-            function generateManifestJSON() {
-                const title = document.getElementById('cfTitle').value.trim() || 'My Track';
-                const artist = document.getElementById('cfArtist').value.trim() || 'Unknown';
-                const album = document.getElementById('cfAlbum').value.trim() || '';
-                const genre = document.getElementById('cfGenre').value.trim() || '';
-                const year = document.getElementById('cfYear').value.trim() || '2026';
-                const quality = document.getElementById('cfQuality').value;
-                const slug = generateSlug(title);
-                const entry = {
-                    id: slug,
-                    title,
-                    artist,
-                    album,
-                    genre,
-                    mood: '',
-                    year: parseInt(year),
-                    duration: window._tempMeta ? window._tempMeta.duration : 0,
-                    quality,
-                    bpm: 120,
-                    audioSrc: `songs/${slug}.mp3`,
-                    coverSrc: `covers/${slug}.jpg`,
-                    lyricsSrc: `lyrics/${slug}.lrc`,
-                    palette: ['#38d7ff', '#2563eb', '#020617'],
-                    verified: false
-                };
-                return JSON.stringify(entry, null, 2);
-            }
+            function generateManifestJSON() { const t = getTrack(); const slug = (t.title || 'track').toLowerCase().replace(
+                    /[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''); const entry = { id: slug, title: t.title, artist: t.artist,
+                    album: t.album, genre: t.genre, mood: t.mood, year: t.year, duration: t.duration, quality: t.quality,
+                    bpm: t.bpm, audioSrc: `songs/${slug}.mp3`, coverSrc: `covers/${slug}.jpg`,
+                    lyricsSrc: `lyrics/${slug}.lrc`, palette: t.palette, verified: t.verified }; return JSON.stringify(
+                    entry, null, 2); }
 
-            function copyToClipboard(text) {
-                if (navigator.clipboard) { navigator.clipboard.writeText(text).then(() => showToast(
-                    'Copied!')); } else { const ta = document.createElement('textarea');
-                    ta.value = text;
-                    document.body.appendChild(ta);
-                    ta.select();
-                    document.execCommand('copy');
-                    ta.remove();
-                    showToast('Copied!'); }
-            }
-
-            function setupAudioEvents() {
-                audio.addEventListener('loadstart', () => {
-                    state.audioLoading = true;
-                    state.audioError = false;
-                    updateAudioStatusBadges();
-                });
-                audio.addEventListener('loadedmetadata', () => {
-                    state.duration = audio.duration;
-                    state.audioReady = true;
-                    state.audioLoading = false;
-                    updateAudioStatusBadges();
+            function setupAudioEvents() { audio.addEventListener('loadedmetadata', () => { state.duration = audio.duration;
+                    updateProgressDisplay();
                     document.getElementById('timeDuration').textContent = formatTime(state.duration);
-                    if (state.isPlaying) audio.play().catch(() => {});
-                });
-                audio.addEventListener('canplay', () => {
+                    state.audioLoading = false;
+                    updateAudioStatusBadges(); if (state.isPlaying) audio.play().catch(() => {}); });
+                audio.addEventListener('timeupdate', () => { if (!state.draggingSeek) { state.currentTime = audio
+                            .currentTime;
+                        updateProgressDisplay(); if (Date.now() - state.lastTimeUpdate > 250) { updateActiveLyric();
+                            state.lastTimeUpdate = Date.now(); } } });
+                audio.addEventListener('ended', () => { if (state.repeat === 'one') { audio.currentTime = 0;
+                        audio.play().catch(() => {}); } else nextTrack(); });
+                audio.addEventListener('error', () => { state.audioError = true;
                     state.audioLoading = false;
                     updateAudioStatusBadges();
-                });
-                audio.addEventListener('timeupdate', () => {
-                    if (!state.draggingSeek) {
-                        state.currentTime = audio.currentTime;
-                        updateProgressDisplay();
-                        const now = Date.now();
-                        if (now - state.lastTimeUpdate > 300) {
-                            updateActiveLyric();
-                            state.lastTimeUpdate = now;
-                        }
-                    }
-                });
-                audio.addEventListener('ended', () => {
-                    if (state.repeat === 'one') {
-                        audio.currentTime = 0;
-                        audio.play().catch(() => {});
-                    } else if (state.repeat === 'all' || state.shuffle || state.currentIndex < state.tracks.length -
-                        1) {
-                        nextTrack();
-                    } else {
-                        safePause();
-                        state.currentTime = 0;
-                        updateProgressDisplay();
-                    }
-                });
-                audio.addEventListener('error', () => {
-                    state.audioError = true;
-                    state.audioLoading = false;
-                    updateAudioStatusBadges();
-                    showToast('Audio error. Skipping disabled. Tap to retry.');
-                });
-            }
+                    showToast('Audio error. Tap retry.'); }); }
 
-            function setupProgressDrag() {
-                const track = document.getElementById('progressTrack');
-                track.addEventListener('pointerdown', function(e) {
-                    state.draggingSeek = true;
-                    track.classList.add('dragging');
-                    track.setPointerCapture(e.pointerId);
-                    const rect = track.getBoundingClientRect();
-                    seekTo(clamp((e.clientX - rect.left) / rect.width, 0, 1));
-                });
-                track.addEventListener('pointermove', function(e) {
-                    if (!state.draggingSeek) return;
-                    const rect = track.getBoundingClientRect();
-                    seekTo(clamp((e.clientX - rect.left) / rect.width, 0, 1));
-                });
-                track.addEventListener('pointerup', () => {
-                    state.draggingSeek = false;
-                    track.classList.remove('dragging');
-                });
-                track.addEventListener('pointercancel', () => {
-                    state.draggingSeek = false;
-                    track.classList.remove('dragging');
-                });
-            }
-
-            function setupCarouselDrag() {
+            function setupEvents() { document.getElementById('btnPlay').addEventListener('click', togglePlay);
+                document.getElementById('btnPrev').addEventListener('click', prevTrack);
+                document.getElementById('btnNext').addEventListener('click', nextTrack);
+                document.getElementById('btnBack').addEventListener('click', prevTrack);
+                document.getElementById('btnForward').addEventListener('click', nextTrack);
+                document.getElementById('btnShuffle').addEventListener('click', toggleShuffle);
+                document.getElementById('btnRepeat').addEventListener('click', cycleRepeat);
+                document.getElementById('btnLike').addEventListener('click', toggleLike);
+                document.getElementById('btnMute').addEventListener('click', toggleMute);
+                document.getElementById('volumeSlider').addEventListener('input', function() { setVolume(parseInt(this
+                        .value) / 100); });
+                document.getElementById('btnSearch').addEventListener('click', () => openPanel('search'));
+                document.getElementById('btnQueue').addEventListener('click', () => openPanel('queue'));
+                document.getElementById('btnQueuePanel').addEventListener('click', () => openPanel('queue'));
+                document.getElementById('btnLyrics').addEventListener('click', () => openPanel('lyrics'));
+                document.getElementById('btnLyricsPanel').addEventListener('click', () => openPanel('lyrics'));
+                document.getElementById('btnLibrary').addEventListener('click', () => openPanel('library'));
+                document.getElementById('btnCreator').addEventListener('click', () => openPanel('creator'));
+                document.getElementById('btnCloseQueue').addEventListener('click', () => closePanel('queue'));
+                document.getElementById('btnCloseLyrics').addEventListener('click', () => closePanel('lyrics'));
+                document.getElementById('btnCloseLibrary').addEventListener('click', () => closePanel('library'));
+                document.getElementById('btnCloseCreator').addEventListener('click', () => closePanel('creator'));
+                document.getElementById('overlayBackdrop').addEventListener('click', closeAllPanels);
+                document.getElementById('searchInput').addEventListener('input', function() { renderSearch(this.value); });
+                document.getElementById('cfAudio').addEventListener('change', handleFileSelect);
+                document.getElementById('btnAddTempTrack').addEventListener('click', addImportedTrack);
+                document.getElementById('btnCopyManifest').addEventListener('click', () => { const json =
+                        generateManifestJSON();
+                    document.getElementById('manifestPreview').textContent = json;
+                    document.getElementById('manifestPreview').style.display = 'block';
+                    navigator.clipboard.writeText(json);
+                    showToast('Copied manifest entry'); });
+                const prog = document.getElementById('progressTrack');
+                prog.addEventListener('pointerdown', function(e) { state.draggingSeek = true;
+                    prog.setPointerCapture(e.pointerId); const rect = prog.getBoundingClientRect();
+                    seekTo(clamp((e.clientX - rect.left) / rect.width, 0, 1)); });
+                prog.addEventListener('pointermove', function(e) { if (state.draggingSeek) { const rect = prog
+                        .getBoundingClientRect();
+                        seekTo(clamp((e.clientX - rect.left) / rect.width, 0, 1)); } });
+                prog.addEventListener('pointerup', () => state.draggingSeek = false);
                 const wrap = document.getElementById('carouselWrap');
-                wrap.addEventListener('pointerdown', function(e) {
-                    if (state.activePanel) return;
+                wrap.addEventListener('pointerdown', function(e) { if (state.activePanel) return;
                     state.carouselDragStartX = e.clientX;
-                    state.carouselDragDelta = 0;
                     state.carouselDragging = false;
-                    wrap.setPointerCapture(e.pointerId);
-                });
-                wrap.addEventListener('pointermove', function(e) {
-                    if (!wrap.hasPointerCapture(e.pointerId)) return;
-                    state.carouselDragDelta = e.clientX - state.carouselDragStartX;
-                    if (Math.abs(state.carouselDragDelta) > 6) state.carouselDragging = true;
-                });
-                wrap.addEventListener('pointerup', function() {
-                    if (!state.carouselDragging) return;
-                    if (Math.abs(state.carouselDragDelta) > 40) {
-                        if (state.carouselDragDelta < -40) nextTrack();
-                        else prevTrack();
-                    }
-                    state.carouselDragging = false;
-                });
-            }
+                    wrap.setPointerCapture(e.pointerId); });
+                wrap.addEventListener('pointermove', function(e) { if (!wrap.hasPointerCapture(e.pointerId))
+                return;
+                    state.carouselDragDelta = e.clientX - state.carouselDragStartX; if (Math.abs(state
+                        .carouselDragDelta) > 6) state.carouselDragging = true; });
+                wrap.addEventListener('pointerup', function() { if (state.carouselDragging && Math.abs(state
+                        .carouselDragDelta) > 40) { if (state.carouselDragDelta < -40) nextTrack();
+                    else prevTrack(); }
+                    state.carouselDragging = false; });
+                document.addEventListener('keydown', e => { if (e.target.tagName === 'INPUT' || e.target.tagName ===
+                        'TEXTAREA') return; if (e.key === 'Escape') closeAllPanels(); if ((e.ctrlKey || e.metaKey) && e
+                        .key === 'k') { e.preventDefault();
+                        openPanel('search'); } if (e.key === ' ') { e.preventDefault();
+                        togglePlay(); } if (e.key === 'ArrowRight') nextTrack(); if (e.key === 'ArrowLeft')
+                prevTrack(); if (e.key === 'ArrowUp') setVolume(Math.min(1, state.volume + .05)); if (e.key ===
+                    'ArrowDown') setVolume(Math.max(0, state.volume - .05)); if (e.key === 'm' || e.key === 'M')
+                    toggleMute(); if (e.key === 'l' || e.key === 'L') openPanel('lyrics'); if (e.key === 'q' || e
+                    .key === 'Q') openPanel('queue'); if (e.key === 'h' || e.key === 'H') openPanel('library'); if (
+                    e.key === 'c' || e.key === 'C') openPanel('creator'); if (e.key === 'f' || e.key === 'F')
+                    toggleLike(); }); }
 
-            function setupWheelNav() {
-                const wrap = document.getElementById('carouselWrap');
-                wrap.addEventListener('wheel', function(e) {
-                    if (state.activePanel || state.draggingSeek || state.carouselDragging) return;
-                    if (Date.now() - (setupWheelNav._last || 0) < 500) return;
-                    setupWheelNav._last = Date.now();
-                    if (e.deltaY > 25 || e.deltaX > 25) nextTrack();
-                    else if (e.deltaY < -25 || e.deltaX < -25) prevTrack();
-                }, { passive: true });
-            }
+            async function loadManifest() { try { const r = await fetch('songs/manifest.json', { cache: 'no-store' }); if (r
+                    .ok) { const data = await r.json(); if (data && Array.isArray(data.tracks)) { state.tracks = data
+                            .tracks.map((t, i) => ({ id: t.id || 'track-' + i, title: t.title || 'Untitled',
+                                artist: t.artist || 'Unknown', album: t.album || '', genre: t.genre || '',
+                                mood: t.mood || '', year: t.year || 2026, duration: t.duration || 0, quality: t
+                                .quality || 'Lossless', bpm: t.bpm || 120, audioSrc: t.audioSrc || '',
+                                coverSrc: t.coverSrc || '', lyricsSrc: t.lyricsSrc || '',
+                                palette: t.palette || ['#38d7ff', '#2563eb', '#020617'], verified: t
+                                .verified === true, lyrics: t.lyrics || [], liked: false }));
+                        state.currentIndex = 0; return; } } } catch (e) {} state.tracks = FALLBACK_TRACKS.map(t => ({ ...t,
+                    liked: false }));
+                state.currentIndex = 0; }
 
-            function setupKeyboard() {
-                document.addEventListener('keydown', function(e) {
-                    const active = document.activeElement;
-                    const isTyping = active && (active.tagName === 'INPUT' || active.tagName ===
-                        'TEXTAREA' || active.isContentEditable);
-                    if (e.key === 'Escape') { e.preventDefault();
-                        closeAllPanels(); return; }
-                    if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault();
-                        openPanel('search'); return; }
-                    if (isTyping) return;
-                    switch (e.key) {
-                        case ' ':
-                            e.preventDefault();
-                            togglePlay();
-                            break;
-                        case 'ArrowRight':
-                            e.preventDefault();
-                            nextTrack();
-                            break;
-                        case 'ArrowLeft':
-                            e.preventDefault();
-                            prevTrack();
-                            break;
-                        case 'ArrowUp':
-                            e.preventDefault();
-                            setVolume(Math.min(1, state.volume + .05));
-                            break;
-                        case 'ArrowDown':
-                            e.preventDefault();
-                            setVolume(Math.max(0, state.volume - .05));
-                            break;
-                        case 'm':
-                        case 'M':
-                            e.preventDefault();
-                            toggleMute();
-                            break;
-                        case 'l':
-                        case 'L':
-                            e.preventDefault();
-                            openPanel('lyrics');
-                            break;
-                        case 'q':
-                        case 'Q':
-                            e.preventDefault();
-                            openPanel('queue');
-                            break;
-                        case 'h':
-                        case 'H':
-                            e.preventDefault();
-                            openPanel('library');
-                            break;
-                        case 'c':
-                        case 'C':
-                            e.preventDefault();
-                            openPanel('creator');
-                            break;
-                        case 'f':
-                        case 'F':
-                            e.preventDefault();
-                            toggleLike();
-                            break;
-                    }
-                });
-            }
-
-            async function loadManifest() {
-                try {
-                    const resp = await fetch('songs/manifest.json', { cache: 'no-store' });
-                    if (!resp.ok) throw new Error('Not found');
-                    const data = await resp.json();
-                    if (data && Array.isArray(data.tracks) && data.tracks.length > 0) {
-                        state.tracks = data.tracks.map((t, i) => ({
-                            id: t.id || 'track-' + i,
-                            title: t.title || 'Untitled',
-                            artist: t.artist || 'Unknown',
-                            album: t.album || '',
-                            genre: t.genre || '',
-                            mood: t.mood || '',
-                            year: t.year || 2026,
-                            duration: t.duration || 0,
-                            quality: t.quality || 'Lossless',
-                            bpm: t.bpm || 120,
-                            audioSrc: t.audioSrc || '',
-                            coverSrc: t.coverSrc || '',
-                            lyricsSrc: t.lyricsSrc || '',
-                            palette: t.palette || ['#38d7ff', '#2563eb', '#020617'],
-                            verified: t.verified === true,
-                            lyrics: t.lyrics || [],
-                            liked: false
-                        }));
-                        state.currentIndex = 0;
-                    } else throw new Error('Invalid manifest');
-                } catch (e) {
-                    state.tracks = FALLBACK_TRACKS.map(t => ({ ...t, liked: false }));
-                    state.currentIndex = 0;
-                }
-            }
-
-            function createParticles() {
-                const layer = document.getElementById('particleLayer');
-                if (!layer) return;
-                layer.innerHTML = '';
-                if (state.performanceProfile === 'low') return;
-                const count = state.performanceProfile === 'medium' ? 8 : 16;
-                const frag = document.createDocumentFragment();
-                for (let i = 0; i < count; i++) {
-                    const p = document.createElement('div');
-                    p.className = 'particle';
-                    p.style.left = Math.random() * 100 + '%';
-                    p.style.top = Math.random() * 100 + '%';
-                    p.style.width = (Math.random() * 2 + 1) + 'px';
-                    p.style.height = p.style.width;
-                    p.style.animationDuration = (Math.random() * 12 + 8) + 's';
-                    p.style.animationDelay = Math.random() * 8 + 's';
-                    frag.appendChild(p);
-                }
-                layer.appendChild(frag);
-            }
-
-            function init() {
-                loadState();
+            function init() { loadState();
                 detectPerformanceProfile();
-                loadManifest().then(() => {
-                    updatePlayerUI();
+                loadManifest().then(() => { updatePlayerUI();
                     renderCarousel();
-                    renderQueuePanel();
-                    renderLyricsPanel();
-                    renderLibraryPanel();
-                    renderSearchResults('');
-                    setDynamicPalette(getTrack());
-                    createParticles();
+                    renderQueue();
+                    renderLyrics();
+                    renderSearch('');
+                    renderLibrary();
                     setupAudioEvents();
-                    setupProgressDrag();
-                    setupCarouselDrag();
-                    setupWheelNav();
-                    setupKeyboard();
-                    document.getElementById('btnPlay').addEventListener('click', togglePlay);
-                    document.getElementById('btnPrev').addEventListener('click', prevTrack);
-                    document.getElementById('btnNext').addEventListener('click', nextTrack);
-                    document.getElementById('btnBack').addEventListener('click', prevTrack);
-                    document.getElementById('btnForward').addEventListener('click', nextTrack);
-                    document.getElementById('btnShuffle').addEventListener('click', toggleShuffle);
-                    document.getElementById('btnRepeat').addEventListener('click', cycleRepeat);
-                    document.getElementById('btnLike').addEventListener('click', toggleLike);
-                    document.getElementById('btnMute').addEventListener('click', toggleMute);
-                    document.getElementById('volumeSlider').addEventListener('input', function() {
-                        setVolume(parseInt(this.value) / 100);
-                    });
-                    document.getElementById('btnSearch').addEventListener('click', () => openPanel('search'));
-                    document.getElementById('btnQueue').addEventListener('click', () => openPanel('queue'));
-                    document.getElementById('btnQueuePanel').addEventListener('click', () => openPanel('queue'));
-                    document.getElementById('btnLyrics').addEventListener('click', () => openPanel('lyrics'));
-                    document.getElementById('btnLyricsPanel').addEventListener('click', () => openPanel('lyrics'));
-                    document.getElementById('btnLibrary').addEventListener('click', () => openPanel('library'));
-                    document.getElementById('btnCreator').addEventListener('click', () => openPanel('creator'));
-                    document.getElementById('btnCloseQueue').addEventListener('click', () => closePanel('queue'));
-                    document.getElementById('btnCloseLyrics').addEventListener('click', () => closePanel('lyrics'));
-                    document.getElementById('btnCloseLibrary').addEventListener('click', () => closePanel('library'));
-                    document.getElementById('btnCloseCreator').addEventListener('click', () => closePanel('creator'));
-                    document.getElementById('overlayBackdrop').addEventListener('click', closeAllPanels);
-                    document.getElementById('searchInput').addEventListener('input', function() {
-                        renderSearchResults(this.value);
-                    });
-                    document.getElementById('cfAudio').addEventListener('change', handleFileSelect);
-                    document.getElementById('btnAddTempTrack').addEventListener('click', addImportedTrack);
-                    document.getElementById('btnCopyManifest').addEventListener('click', () => {
-                        const json = generateManifestJSON();
-                        document.getElementById('manifestPreview').textContent = json;
-                        document.getElementById('manifestPreview').style.display = 'block';
-                        copyToClipboard(json);
-                    });
-                    document.body.addEventListener('click', function() { state.userInteracted = true; }, { once: true });
-                    window.addEventListener('resize', () => { detectPerformanceProfile();
-                        renderCarousel(); });
-                    if (state.isPlaying && audio.src) { safePlay(); }
-                    announce('Auralis Vision Ultra ready');
-                });
-            }
+                    setupEvents();
+                    setDynamicPalette(getTrack()); if (state.isPlaying && audio.src) safePlay();
+                    announce('Auralis Vision Ultra ready'); }); }
             document.addEventListener('DOMContentLoaded', init);
-            window.addEventListener('beforeunload', () => {
-                state.objectUrls.forEach(url => URL.revokeObjectURL(url));
-            });
+            window.addEventListener('beforeunload', () => state.objectUrls.forEach(u => URL.revokeObjectURL(u)));
         })();
     </script>
 </body>
