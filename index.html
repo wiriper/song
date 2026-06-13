@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Auralis Vision — Spatial Music</title>
+<style>
+:root{
+  --bg-0:#03060d;
+  --bg-1:#070d1a;
+  --accent:#46e6ff;
+  --accent-2:#7c7bff;
+  --accent-3:#ff6ad5;
+  --glass-bg:rgba(8,15,28,0.42);
+  --glass-bg-strong:rgba(10,18,34,0.55);
+  --border:rgba(255,255,255,0.16);
+  --border-soft:rgba(255,255,255,0.08);
+  --text:#f2f6ff;
+  --muted:rgba(210,222,245,0.55);
+  --muted-2:rgba(180,196,225,0.4);
+  --glow:rgba(70,230,255,0.55);
+  --radius:28px;
+  --radius-lg:36px;
+  --ease:cubic-bezier(.22,1,.36,1);
+  --ease-spring:cubic-bezier(.34,1.56,.64,1);
+  --t:.45s var(--ease);
+  --p1:#46e6ff; --p2:#1857c9; --p3:#0a1430;
+  --mx:0; --my:0;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{
+  font-family:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  background:var(--bg-0);
+  color:var(--text);
+  overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+  position:relative;
+  user-select:none;
+}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:8px}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:8px}
+::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.22)}
+
+/* ===== BACKGROUND ===== */
+#bg{position:fixed;inset:0;z-index:0;overflow:hidden;background:
+  radial-gradient(1200px 900px at 50% -10%, rgba(20,40,90,.55), transparent 60%),
+  radial-gradient(900px 700px at 10% 110%, rgba(60,20,120,.4), transparent 60%),
+  linear-gradient(180deg,#03060d,#04081400 40%,#020409);
+  transition:background 1.2s var(--ease);
+}
+.orb{position:absolute;border-radius:50%;filter:blur(70px);opacity:.55;mix-blend-mode:screen;
+  transition:background 1.2s var(--ease);will-change:transform}
+.orb.o1{width:520px;height:520px;top:-120px;left:8%;background:radial-gradient(circle,var(--p1),transparent 70%);
+  animation:float1 18s ease-in-out infinite}
+.orb.o2{width:640px;height:640px;bottom:-180px;right:0%;background:radial-gradient(circle,var(--p2),transparent 70%);
+  animation:float2 22s ease-in-out infinite}
+.orb.o3{width:420px;height:420px;top:30%;right:18%;background:radial-gradient(circle,var(--accent-3),transparent 70%);
+  opacity:.3;animation:float3 26s ease-in-out infinite}
+.orb.o4{width:380px;height:380px;bottom:10%;left:20%;background:radial-gradient(circle,var(--accent-2),transparent 70%);
+  opacity:.35;animation:float1 24s ease-in-out infinite reverse}
+@keyframes float1{0%,100%{transform:translate(calc(var(--mx)*-30px),calc(var(--my)*-30px)) scale(1)}50%{transform:translate(40px,-30px) scale(1.12)}}
+@keyframes float2{0%,100%{transform:translate(calc(var(--mx)*30px),calc(var(--my)*30px)) scale(1)}50%{transform:translate(-50px,20px) scale(1.1)}}
+@keyframes float3{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(30px,40px) scale(1.15)}}
+#bg::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.55) 100%);}
+#noise{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.035;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+#particles{position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden}
+.particle{position:absolute;border-radius:50%;background:#fff;pointer-events:none;
+  animation:rise linear infinite;opacity:0}
+@keyframes rise{0%{transform:translateY(20px);opacity:0}10%{opacity:var(--o)}90%{opacity:var(--o)}100%{transform:translateY(-110vh);opacity:0}}
+
+/* ===== GLASS BASE ===== */
+.glass{
+  background:var(--glass-bg);
+  backdrop-filter:blur(28px) saturate(180%);
+  -webkit-backdrop-filter:blur(28px) saturate(180%);
+  border:1px solid var(--border);
+  box-shadow:0 24px 70px -20px rgba(0,0,0,.7),
+             0 4px 18px rgba(0,0,0,.4),
+             inset 0 1px 0 rgba(255,255,255,.18),
+             inset 0 -1px 0 rgba(255,255,255,.04);
+  position:relative;
+  overflow:hidden;
+}
+.glass::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:linear-gradient(160deg,rgba(255,255,255,.1),transparent 38%);}
+
+/* ===== APP ===== */
+#app{position:relative;z-index:2;height:100%;width:100%;}
+
+/* NAVBAR */
+#nav{position:fixed;top:24px;left:50%;transform:translateX(-50%);z-index:30;
+  width:min(880px,calc(100% - 36px));height:68px;border-radius:999px;
+  display:flex;align-items:center;gap:8px;padding:0 14px;
+  animation:navIn 1s var(--ease-spring) both;}
+@keyframes navIn{from{opacity:0;transform:translate(-50%,-40px)}to{opacity:1;transform:translate(-50%,0)}}
+.nav-group{display:flex;align-items:center;gap:4px}
+.ic-btn{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  color:var(--text);transition:transform .25s var(--ease),background .25s,box-shadow .25s;position:relative}
+.ic-btn svg{width:20px;height:20px}
+.ic-btn:hover{background:rgba(255,255,255,.1);box-shadow:0 0 18px var(--glow)}
+.ic-btn:active{transform:scale(.88)}
+.nav-center{flex:1;text-align:center;overflow:hidden;padding:0 6px}
+#navTitle{font-size:15px;font-weight:600;letter-spacing:.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  transition:opacity .3s}
+#navArtist{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.avatar{width:42px;height:42px;border-radius:50%;flex:none;
+  background:conic-gradient(from 0deg,var(--accent),var(--accent-2),var(--accent-3),var(--accent));
+  box-shadow:0 0 16px var(--glow),inset 0 0 8px rgba(0,0,0,.4);
+  border:1.5px solid rgba(255,255,255,.3);position:relative;overflow:hidden}
+.avatar::after{content:"";position:absolute;inset:5px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.7),transparent 50%),#0a1430}
+
+/* BRAND */
+#brand{position:fixed;top:30px;left:30px;z-index:25;display:flex;align-items:center;gap:10px;
+  animation:fadeUp 1s .2s var(--ease) both}
+#brand .logo{width:34px;height:34px;border-radius:11px;
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  box-shadow:0 0 22px var(--glow);display:flex;align-items:center;justify-content:center}
+#brand .logo svg{width:18px;height:18px;color:#03060d}
+#brand .name{font-weight:700;font-size:15px;letter-spacing:.4px}
+#brand .sub{font-size:9px;letter-spacing:3px;color:var(--muted);text-transform:uppercase}
+@media(max-width:900px){#brand{display:none}}
+
+/* CAROUSEL */
+#stage{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  perspective:1600px;z-index:5}
+#carousel{position:relative;width:340px;height:340px;transform-style:preserve-3d;
+  animation:fadeScale 1.1s .35s var(--ease) both}
+@keyframes fadeScale{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
+.cover{position:absolute;width:340px;height:340px;left:0;top:0;border-radius:30px;overflow:hidden;
+  transition:transform .8s var(--ease),opacity .8s var(--ease),filter .8s var(--ease),box-shadow .8s var(--ease);
+  cursor:pointer;will-change:transform;backface-visibility:hidden;
+  border:1px solid rgba(255,255,255,.12);
+  box-shadow:0 30px 80px -30px rgba(0,0,0,.9)}
+.cover .layer{position:absolute;inset:0}
+.cover-grid{background-image:linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px);background-size:34px 34px;
+  mask:radial-gradient(circle at 50% 50%,#000,transparent 75%);opacity:.6}
+.cover-orb{border-radius:50%;filter:blur(20px);mix-blend-mode:screen;opacity:.85}
+.cover-noise{opacity:.06;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbul
+encetype='fractalNoise' baseFrequency='0.7' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.cover-info{position:absolute;inset:0;padding:28px;display:flex;flex-direction:column;justify-content:flex-end;
+  background:linear-gradient(to top,rgba(0,0,0,.7),transparent 60%);pointer-events:none}
+.cover-info .c-artist{font-size:12px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+.cover-info .c-title{font-size:24px;font-weight:700;letter-spacing:-.5px}
+.badge{position:absolute;top:24px;right:24px;padding:4px 10px;border-radius:6px;
+  background:rgba(255,255,255,.12);backdrop-filter:blur(8px);
+  font-size:9px;font-weight:700;letter-spacing:.8px;border:1px solid rgba(255,255,255,.1)}
+
+/* 3D POSITIONS */
+.cover.active{transform:translate3d(0,0,100px) scale(1);opacity:1;z-index:20;
+  box-shadow:0 40px 100px -20px rgba(0,0,0,.8),0 0 60px rgba(70,230,255,.15);cursor:default}
+.cover.prev1{transform:translate3d(-260px,0,-150px) rotateY(35deg) scale(.85);opacity:.7;z-index:15}
+.cover.next1{transform:translate3d(260px,0,-150px) rotateY(-35deg) scale(.85);opacity:.7;z-index:15}
+.cover.prev2{transform:translate3d(-480px,0,-400px) rotateY(45deg) scale(.7);opacity:.35;z-index:10;filter:blur(2px)}
+.cover.next2{transform:translate3d(480px,0,-400px) rotateY(-45deg) scale(.7);opacity:.35;z-index:10;filter:blur(2px)}
+.cover.hidden-left{transform:translate3d(-600px,0,-600px);opacity:0;z-index:5}
+.cover.hidden-right{transform:translate3d(600px,0,-600px);opacity:0;z-index:5}
+
+/* PLAYER BAR */
+#player{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);z-index:30;
+  width:min(980px,calc(100% - 32px));min-height:96px;border-radius:32px;
+  display:flex;align-items:center;gap:20px;padding:12px 28px;
+  animation:playIn 1s .15s var(--ease-spring) both;}
+@keyframes playIn{from{opacity:0;transform:translate(-50%,40px)}to{opacity:1;transform:translate(-50%,0)}}
+.track-info-mini{display:flex;align-items:center;gap:14px;width:240px;flex:none}
+#pCover{width:56px;height:56px;border-radius:12px;box-shadow:0 10px 25px rgba(0,0,0,.5);
+  border:1px solid rgba(255,255,255,.1);transition:transform .4s var(--ease);overflow:hidden;position:relative}
+#pCover.playing{animation:pulseCover 4s ease-in-out infinite}
+@keyframes pulseCover{0%,100%{transform:scale(1)}50%{transform:scale(1.04);box-shadow:0 15px 35px rgba(70,230,255,.15)}}
+.p-titles{display:flex;flex-direction:column;gap:2px;overflow:hidden}
+#pTitle{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#pArtist{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.controls{display:flex;align-items:center;gap:6px;justify-content:center}
+.ctrl-btn{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  color:rgba(255,255,255,.7);transition:all .2s;position:relative}
+.ctrl-btn:hover{color:var(--text);background:rgba(255,255,255,.08)}
+.ctrl-btn svg{width:18px;height:18px}
+.ctrl-btn.active{color:var(--accent)}
+.ctrl-btn.active::after{content:"";position:absolute;bottom:6px;width:3px;height:3px;border-radius:50%;background:var(--accent)}
+.btn-play{width:54px;height:54px;background:var(--text);color:var(--bg-1);border-radius:50%;
+  box-shadow:0 0 20px rgba(255,255,255,.3),inset 0 2px 4px rgba(255,255,255,1);margin:0 10px}
+.btn-play:hover{transform:scale(1.08);background:#fff;box-shadow:0 0 30px rgba(70,230,255,.4)}
+.btn-play:active{transform:scale(.94)}
+.btn-play svg{width:24px;height:24px;margin-left:3px}
+.btn-play.playing svg{margin-left:0}
+
+.progress-container{flex:1;display:flex;align-items:center;gap:14px;padding:0 20px}
+.time{font-size:10px;color:var(--muted-2);font-family:monospace;min-width:34px;letter-spacing:.5px}
+.slider{flex:1;height:40px;display:flex;align-items:center;cursor:pointer;position:relative;touch-action:none}
+.slider-rail{width:100%;height:5px;background:rgba(255,255,255,.1);border-radius:10px;position:relative;overflow:hidden}
+.slider-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent-2));
+  border-radius:10px;width:0%;position:relative}
+.slider-thumb{position:absolute;top:50%;left:0%;width:14px;height:14px;background:#fff;border-radius:50%;
+  transform:translate(-50%,-50%) scale(0);transition:transform .2s;box-shadow:0 0 12px var(--glow)}
+.slider:hover .slider-thumb{transform:translate(-50%,-50%) scale(1)}
+.slider:hover .slider-rail{background:rgba(255,255,255,.18)}
+
+.vol-container{display:flex;align-items:center;gap:10px;width:160px;padding-left:10px}
+.vol-container .slider{width:80px;flex:none}
+
+/* PANELS */
+.panel-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);backdrop-filter:blur(8px);z-index:50;
+  opacity:0;pointer-events:none;transition:opacity .4s var(--ease)}
+.panel-overlay.open{opacity:1;pointer-events:all}
+.panel{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.9);
+  width:min(600px,calc(100% - 40px));max-height:80vh;z-index:60;border-radius:var(--radius-lg);
+  opacity:0;pointer-events:none;transition:all .5s var(--ease-spring);
+  display:flex;flex-direction:column;padding:32px;}
+.panel.open{opacity:1;pointer-events:all;transform:translate(-50%,-50%) scale(1)}
+.panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.panel-title{font-size:20px;font-weight:700;letter-spacing:-.2px}
+.panel-content{flex:1;overflow-y:auto;padding-right:8px}
+
+/* SEARCH */
+#searchPanel{max-width:800px;top:100px;transform:translate(-50%,-20px) scale(.98)}
+#searchPanel.open{transform:translate(-50%,0) scale(1)}
+#searchInput{width:100%;background:rgba(255,255,255,.05);border:1px solid var(--border);
+  border-radius:18px;padding:18px 24px;color:#fff;font-size:18px;outline:none;transition:all .3s}
+#searchInput:focus{background:rgba(255,255,255,.09);border-color:var(--accent);box-shadow:0 0 20px rgba(70,230,255,.2)}
+.search-results{margin-top:24px;display:grid;grid-template-columns:1fr;gap:10px}
+.track-item{display:flex;align-items:center;gap:16px;padding:12px;border-radius:16px;transition:all .25s;cursor:pointer}
+.track-item:hover{background:rgba(255,255,255,.08)}
+.track-item.active{background:rgba(70,230,255,.12);border:1px solid rgba(70,230,255,.2)}
+.ti-img{width:48px;height:48px;border-radius:10px;flex:none;overflow:hidden;position:relative}
+.ti-info{flex:1;overflow:hidden}
+.ti-title{font-size:14px;font-weight:600;margin-bottom:2px}
+.ti-artist{font-size:11px;color:var(--muted)}
+.ti-meta{font-size:11px;color:var(--muted-2);font-family:monospace}
+
+/* LYRICS */
+#lyricsPanel{width:min(540px,calc(100% - 32px));height:70vh;text-align:center}
+.lyrics-scroll{padding:40px 0;mask-image:linear-gradient(to bottom,transparent, #000 15%, #000 85%, transparent)}
+.lyric-line{font-size:24px;font-weight:700;color:var(--muted);padding:14px 0;transition:all .4s;opacity:.3;filter:blur(1px)}
+.lyric-line.active{color:#fff;opacity:1;filter:blur(0);transform:scale(1.1);text-shadow:0 0 20px rgba(255,255,255,.4)}
+
+/* QUEUE */
+#queuePanel{left:auto;right:24px;top:100px;bottom:140px;transform:translateX(50px);height:auto;width:340px;margin:0}
+#queuePanel.open{transform:translateX(0)}
+@media(max-width:1200px){#queuePanel{left:50%;right:auto;top:50%;width:min(400px,90%)}}
+
+/* MOBILE ADAPTATION */
+@media(max-width:768px){
+  #nav{height:60px;padding:0 8px;top:12px}
+  .nav-center{display:none}
+  #carousel{width:260px;height:260px}
+  .cover{width:260px;height:260px}
+  .cover.prev1{transform:translate3d(-140px,0,-100px) rotateY(25deg) scale(.8)}
+  .cover.next1{transform:translate3d(140px,0,-100px) rotateY(-25deg) scale(.8)}
+  .cover.prev2,.cover.next2{display:none}
+  #player{bottom:16px;flex-direction:column;gap:12px;padding:16px;min-height:auto;border-radius:28px}
+  .track-info-mini{width:100%;justify-content:center}
+  .progress-container{width:100%;padding:0 4px}
+  .vol-container{display:none}
+  .controls{width:100%;justify-content:space-between}
+  .panel{width:100%;bottom:0;top:auto;left:0;transform:translateY(100%);max-height:85vh;border-radius:32px 32px 0 0}
+  .panel.open{transform:translateY(0)}
+}
+
+/* EQ */
+.eq{display:flex;align-items:flex-end;gap:2px;height:14px;width:16px}
+.eq-bar{width:3px;background:var(--accent);height:20%;border-radius:1px}
+.playing .eq-bar{animation:eq .6s ease-in-out infinite alternate}
+.eq-bar:nth-child(2){animation-delay:.2s}
+.eq-bar:nth-child(3){animation-delay:.4s}
+@keyframes eq{0%{height:20%}100%{height:100%}}
+
+/* CUSTOMS FOR COVERS */
+.c-orbit{background:#0a0c1a}
+.c-orbit .cover-orb{width:180px;height:180px;top:20%;left:20%;background:radial-gradient(circle,#46e6ff,transparent)}
+.c-crystal{background:#1a0a1a}
+.c-crystal .cover-orb{width:200px;height:200px;top:10%;right:10%;background:radial-gradient(circle,#ff6ad5,transparent)}
+.c-signal{background:#0a1a15}
+.c-signal .cover-orb{width:220px;height:220px;bottom:10%;left:5%;background:radial-gradient(circle,#00ff9d,transparent)}
+.c-drive{background:#1a140a}
+.c-drive .cover-orb{width:190px;height:190px;top:30%;right:5%;background:radial-gradient(circle,#ff9d00,transparent)}
+.c-gravity{background:#110a1a}
+.c-gravity .cover-orb{width:240px;height:240px;top:-10%;left:10%;background:radial-gradient(circle,#7c7bff,transparent)}
+.c-neon{background:#0a0a0a}
+.c-neon .cover-orb{width:160px;height:160px;bottom:20%;right:20%;background:radial-gradient(circle,#ff2d55,transparent)}
+.c-comet{background:#0f172a}
+.c-comet .cover-orb{width:210px;height:210px;top:40%;left:40%;background:radial-gradient(circle,#fff,transparent);opacity:.4}
+.c-horizon{background:#0a161a}
+.c-horizon .cover-orb{width:300px;height:300px;bottom:-40px;left:50%;transform:translateX(-50%);background:radial-gradient(circle,#46e6ff,transparent)}
+
+</style>
+</head>
+<body>
+
+<div id="bg">
+  <div class="orb o1"></div>
+  <div class="orb o2"></div>
+  <div class="orb o3"></div>
+  <div class="orb o4"></div>
+</div>
+<div id="noise"></div>
+<div id="particles"></div>
+
+<div id="app">
+  <!-- Top Nav -->
+  <header id="nav" class="glass">
+    <div class="nav-group">
+      <button class="ic-btn" onclick="prevTrack()" aria-label="Previous">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="19 20 9 12 19 4 19 20"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg>
+      </button>
+      <button class="ic-btn" onclick="nextTrack()" aria-label="Next">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg>
+      </button>
+    </div>
+    <div class="nav-center">
+      <div id="navTitle">Select a track</div>
+      <div id="navArtist">Auralis Vision</div>
+    </div>
+    <div class="nav-group">
+      <button class="ic-btn" onclick="openSearch()" aria-label="Search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      </button>
+      <button class="ic-btn" onclick="openQueue()" aria-label="Queue">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+      </button>
+      <div class="avatar"></div>
+    </div>
+  </header>
+
+  <div id="brand">
+    <div class="logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M2 12h20M7 7l10 10M17 7L7 10"></path></svg>
+    </div>
+    <div>
+      <div class="name">AURALIS VISION</div>
+      <div class="sub">SPATIAL ENGINE</div>
+    </div>
+  </div>
+
+  <!-- Main View -->
+  <main id="stage">
+    <div id="carousel"></div>
+  </main>
+
+  <!-- Player -->
+  <footer id="player" class="glass">
+    <div class="track-info-mini">
+      <div id="pCover"></div>
+      <div class="p-titles">
+        <div id="pTitle">Not Playing</div>
+        <div id="pArtist">Discover Sound</div>
+      </div>
+      <div class="eq">
+        <div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="ctrl-btn" id="btnShuffle" onclick="toggleShuffle()" title="Shuffle">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg>
+      </button>
+      <button class="ctrl-btn" onclick="prevTrack()" title="Previous">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="19 20 9 12 19 4 19 20"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg>
+      </button>
+      <button class="btn-play" id="btnPlay" onclick="togglePlay()" aria-label="Play">
+        <svg id="playIcon" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+      </button>
+      <button class="ctrl-btn" onclick="nextTrack()" title="Next">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg>
+      </button>
+      <button class="ctrl-btn" id="btnRepeat" onclick="toggleRepeat()" title="Repeat">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg>
+      </button>
+    </div>
+
+    <div class="progress-container">
+      <span class="time" id="currTime">0:00</span>
+      <div class="slider" id="progSlider">
+        <div class="slider-rail">
+          <div class="slider-fill" id="progFill"></div>
+        </div>
+        <div class="slider-thumb" id="progThumb"></div>
+      </div>
+      <span class="time" id="durTime">0:00</span>
+    </div>
+
+    <div class="vol-container">
+      <button class="ctrl-btn" onclick="toggleMute()" id="btnMute">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+      </button>
+      <div class="slider" id="volSlider">
+        <div class="slider-rail">
+          <div class="slider-fill" id="volFill"></div>
+        </div>
+        <div class="slider-thumb" id="volThumb"></div>
+      </div>
+    </div>
+    
+    <div class="controls" style="margin-left: 10px;">
+      <button class="ctrl-btn" onclick="openLyrics()" title="Lyrics">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+      </button>
+    </div>
+  </footer>
+</div>
+
+<!-- Panels -->
+<div class="panel-overlay" id="overlay" onclick="closeAllPanels()"></div>
+
+<div class="panel glass" id="searchPanel">
+  <div class="panel-header">
+    <span class="panel-title">Search</span>
+    <button class="ic-btn" onclick="closeAllPanels()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+  </div>
+  <input type="text" id="searchInput" placeholder="Songs, artists, or mood..." autocomplete="off">
+  <div class="panel-content search-results" id="searchResults"></div>
+</div>
+
+<div class="panel glass" id="queuePanel">
+  <div class="panel-header">
+    <span class="panel-title">Up Next</span>
+    <button class="ic-btn" onclick="closeAllPanels()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+  </div>
+  <div class="panel-content" id="queueList"></div>
+</div>
+
+<div class="panel glass" id="lyricsPanel">
+  <div class="panel-header">
+    <span class="panel-title">Lyrics</span>
+    <button class="ic-btn" onclick="closeAllPanels()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+  </div>
+  <div class="panel-content lyrics-scroll" id="lyricsContent"></div>
+</div>
+
+<script>
+const tracks = [
+  { id: 1, title: "Black Orbit", artist: "Nova Vale", album: "Void Runner", dur: 215, quality: "SPATIAL", palette: ["#46e6ff", "#1857c9", "#0a1430"], class: "c-orbit", lyrics: ["Floating in the dark", "Counting every star", "Orbiting the soul", "Losing all control", "The void is calling me", "Endless harmony"] },
+  { id: 2, title: "Crystal Echoes", artist: "Mira Sol", album: "Refractions", dur: 184, quality: "LOSSLESS", palette: ["#ff6ad5", "#9e2aff", "#1a0a25"], class: "c-crystal", lyrics: ["Shattered light", "In the night", "Echoes of the past", "Never meant to last", "Crystal clear vision", "Perfect collision"] },
+  { id: 3, title: "Midnight Signal", artist: "Orion West", album: "Frequency", dur: 242, quality: "HI-RES", palette: ["#00ff9d", "#008a55", "#051510"], class: "c-signal", lyrics: ["Radio waves", "In static caves", "A signal from afar", "Lighting up my car", "Driving through the neon", "A path to carry on"] },
+  { id: 4, title: "Afterglow Drive", artist: "Elara Moon", album: "Sunset Peak", dur: 198, quality: "SPATIAL", palette: ["#ff9d00", "#d14000", "#1a0f05"], class: "c-drive", lyrics: ["Golden hour light", "Everything's alright", "Fading in the rearview", "Thinking only of you", "Warmth upon the skin", "Let the night begin"] },
+  { id: 5, title: "Velvet Gravity", artist: "Kairo Bloom", album: "Soft Matter", dur: 231, quality: "LOSSLESS", palette: ["#7c7bff", "#4e39d1", "#0d0a1a"], class: "c-gravity", lyrics: ["Weightless motion", "Across the ocean", "Velvet touch of time", "In a rhythmic rhyme", "Gravity pulls slow", "Nowhere else to go"] },
+  { id: 6, title: "Neon Rainfall", artist: "Sera Voss", album: "Electric City", dur: 165, quality: "SPATIAL", palette: ["#ff2d55", "#8b102a", "#1a0508"], class: "c-neon", lyrics: ["Raindrops on the glass", "Minutes as they pass", "Neon pink and blue", "Looking for the clue", "Cybernetic heart", "Tearing us apart"] },
+  { id: 7, title: "Silent Comet", artist: "Atlas Grey", album: "Deep Field", dur: 280, quality: "HI-RES", palette: ["#ffffff", "#4b5563", "#0a0f1a"], class: "c-comet", lyrics: ["Frozen in time", "A silent climb", "Beyond the atmosphere", "Crystals made of fear", "Streaking through the deep", "Promises we keep"] },
+  { id: 8, title: "Blue Horizon", artist: "Luma Ray", album: "Azure", dur: 204, quality: "SPATIAL", palette: ["#46e6ff", "#00a8cc", "#05101a"], class: "c-horizon", lyrics: ["Ocean in the sky", "Birds that never fly", "Azure tinted dreams", "Tearing at the seams", "Beyond the blue line", "Everything is fine"] }
+];
+
+let state = {
+  cur: 0,
+  playing: false,
+  time: 0,
+  vol: 0.8,
+  muted: false,
+  shuffle: false,
+  repeat: 0, // 0: off, 1: all, 2: one
+  lastUpdate: 0
+};
+
+// DOM Elements
+const carousel = document.getElementById('carousel');
+const pTitle = document.getElementById('pTitle');
+const pArtist = document.getElementById('pArtist');
+const navTitle = document.getElementById('navTitle');
+const navArtist = document.getElementById('navArtist');
+const pCover = document.getElementById('pCover');
+const btnPlay = document.getElementById('btnPlay');
+const playIcon = document.getElementById('playIcon');
+const progFill = document.getElementById('progFill');
+const progThumb = document.getElementById('progThumb');
+const currTimeEl = document.getElementById('currTime');
+const durTimeEl = document.getElementById('durTime');
+const volFill = document.getElementById('volFill');
+const volThumb = document.getElementById('volThumb');
+const particlesContainer = document.getElementById('particles');
+
+// Init
+function init() {
+  const saved = localStorage.getItem('auralis_state');
+  if(saved) {
+    const s = JSON.parse(saved);
+    state.vol = s.vol ?? 0.8;
+    state.muted = s.muted ?? false;
+  }
+  
+  createCovers();
+  updateUI();
+  createParticles();
+  
+  // Events
+  document.addEventListener('keydown', handleKeys);
+  document.addEventListener('mousemove', e => {
+    const x = (e.clientX / window.innerWidth - 0.5) * 2;
+    const y = (e.clientY / window.innerHeight - 0.5) * 2;
+    document.documentElement.style.setProperty('--mx', x);
+    document.documentElement.style.setProperty('--my', y);
+  });
+
+  // Sliders
+  setupSlider('progSlider', (v) => {
+    state.time = v * tracks[state.cur].dur;
+    updateProgressUI();
+  });
+  setupSlider('volSlider', (v) => {
+    state.vol = v;
+    state.muted = false;
+    updateVolUI();
+  });
+
+  // Loop
+  requestAnimationFrame(tick);
+  
+  // Search
+  document.getElementById('searchInput').addEventListener('input', e => renderSearch(e.target.value));
+}
+
+function createCovers() {
+  carousel.innerHTML = '';
+  tracks.forEach((t, i) => {
+    const div = document.createElement('div');
+    div.className = `cover ${t.class}`;
+    div.innerHTML = `
+      <div class="layer cover-grid"></div>
+      <div class="layer cover-orb"></div>
+      <div class="layer cover-noise"></div>
+      <div class="badge">${t.quality}</div>
+      <div class="cover-info">
+        <div class="c-artist">${t.artist}</div>
+        <div class="c-title">${t.title}</div>
+      </div>
+    `;
+    div.onclick = () => { if(state.cur !== i) goToTrack(i); };
+    carousel.appendChild(div);
+  });
+}
+
+function updateUI() {
+  const track = tracks[state.cur];
+  
+  // Carousel 3D
+  const covers = document.querySelectorAll('.cover');
+  covers.forEach((c, i) => {
+    c.className = `cover ${tracks[i].class}`;
+    if(i === state.cur) c.classList.add('active');
+    else if(i === (state.cur - 1 + tracks.length) % tracks.length) c.classList.add('prev1');
+    else if(i === (state.cur + 1) % tracks.length) c.classList.add('next1');
+    else if(i === (state.cur - 2 + tracks.length) % tracks.length) c.classList.add('prev2');
+    else if(i === (state.cur + 2) % tracks.length) c.classList.add('next2');
+    else if(i < state.cur) c.classList.add('hidden-left');
+    else c.classList.add('hidden-right');
+  });
+
+  // Background
+  const bg = document.getElementById('bg');
+  const p = track.palette;
+  document.documentElement.style.setProperty('--p1', p[0]);
+  document.documentElement.style.setProperty('--p2', p[1]);
+  document.documentElement.style.setProperty('--p3', p[2]);
+
+  // Text
+  pTitle.innerText = track.title;
+  pArtist.innerText = track.artist;
+  navTitle.innerText = track.title;
+  navArtist.innerText = track.artist;
+  
+  // Player Cover Mini
+  pCover.className = tracks[state.cur].class;
+  pCover.innerHTML = `<div class="layer cover-orb" style="filter:blur(8px)"></div>`;
+  
+  if(state.playing) pCover.classList.add('playing');
+  else pCover.classList.remove('playing');
+
+  durTimeEl.innerText = formatTime(track.dur);
+  updateProgressUI();
+  updateVolUI();
+  
+  // Panels
+  if(document.getElementById('lyricsPanel').classList.contains('open')) renderLyrics();
+  if(document.getElementById('queuePanel').classList.contains('open')) renderQueue();
+}
+
+function goToTrack(idx) {
+  state.cur = idx;
+  state.time = 0;
+  updateUI();
+  save();
+}
+
+function togglePlay() {
+  state.playing = !state.playing;
+  playIcon.innerHTML = state.playing 
+    ? '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>' 
+    : '<path d="M8 5v14l11-7z"/>';
+  
+  const pBar = document.querySelector('.eq');
+  if(state.playing) {
+    pBar.classList.add('playing');
+    document.getElementById('pCover').classList.add('playing');
+  } else {
+    pBar.classList.remove('playing');
+    document.getElementById('pCover').classList.remove('playing');
+  }
+}
+
+function nextTrack() {
+  if(state.shuffle) {
+    state.cur = Math.floor(Math.random() * tracks.length);
+  } else {
+    state.cur = (state.cur + 1) % tracks.length;
+  }
+  state.time = 0;
+  updateUI();
+}
+
+function prevTrack() {
+  state.cur = (state.cur - 1 + tracks.length) % tracks.length;
+  state.time = 0;
+  updateUI();
+}
+
+function toggleShuffle() {
+  state.shuffle = !state.shuffle;
+  document.getElementById('btnShuffle').classList.toggle('active', state.shuffle);
+}
+
+function toggleRepeat() {
+  state.repeat = (state.repeat + 1) % 3;
+  const btn = document.getElementById('btnRepeat');
+  btn.classList.toggle('active', state.repeat > 0);
+  btn.title = ["Repeat Off", "Repeat All", "Repeat One"][state.repeat];
+}
+
+function toggleMute() {
+  state.muted = !state.muted;
+  updateVolUI();
+}
+
+function tick(now) {
+  if(state.playing) {
+    const dt = (now - (state.lastUpdate || now)) / 1000;
+    state.time += dt;
+    
+    if(state.time >= tracks[state.cur].dur) {
+      if(state.repeat === 2) {
+        state.time = 0;
+      } else {
+        nextTrack();
+        if(state.repeat === 0 && state.cur === 0) state.playing = false;
+      }
+    }
+    updateProgressUI();
+    
+    // Sync Lyrics
+    if(document.getElementById('lyricsPanel').classList.contains('open')) {
+      const lines = document.querySelectorAll('.lyric-line');
+      const track = tracks[state.cur];
+      const step = track.dur / track.lyrics.length;
+      const curLine = Math.floor(state.time / step);
+      lines.forEach((l, i) => {
+        l.classList.toggle('active', i === curLine);
+      });
+    }
+  }
+  state.lastUpdate = now;
+  requestAnimationFrame(tick);
+}
+
+function updateProgressUI() {
+  const track = tracks[state.cur];
+  const perc = (state.time / track.dur) * 100;
+  progFill.style.width = perc + '%';
+  progThumb.style.left = perc + '%';
+  currTimeEl.innerText = formatTime(state.time);
+}
+
+function updateVolUI() {
+  const v = state.muted ? 0 : state.vol;
+  volFill.style.width = (v * 100) + '%';
+  volThumb.style.left = (v * 100) + '%';
+  const icon = document.getElementById('btnMute').querySelector('svg');
+  if(v === 0) icon.innerHTML = '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line>';
+  else icon.innerHTML = '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>';
+  save();
+}
+
+function formatTime(s) {
+  const m = Math.floor(s / 60);
+  const sec = Math.floor(s % 60);
+  return `${m}:${sec < 10 ? '0' : ''}${sec}`;
+}
+
+function setupSlider(id, cb) {
+  const el = document.getElementById(id);
+  let down = false;
+  const handle = (e) => {
+    if(!down) return;
+    const rect = el.getBoundingClientRect();
+    const x = (e.clientX || e.touches[0].clientX) - rect.left;
+    let v = Math.max(0, Math.min(1, x / rect.width));
+    cb(v);
+  };
+  el.onmousedown = (e) => { down = true; handle(e); };
+  el.ontouchstart = (e) => { down = true; handle(e); };
+  window.addEventListener('mousemove', handle);
+  window.addEventListener('touchmove', handle);
+  window.addEventListener('mouseup', () => down = false);
+  window.addEventListener('touchend', () => down = false);
+}
+
+function handleKeys(e) {
+  if(document.activeElement.tagName === 'INPUT') return;
+  if(e.code === 'Space') { e.preventDefault(); togglePlay(); }
+  if(e.code === 'ArrowRight') nextTrack();
+  if(e.code === 'ArrowLeft') prevTrack();
+  if(e.code === 'KeyM') toggleMute();
+  if(e.code === 'KeyL') openLyrics();
+  if(e.code === 'KeyQ') openQueue();
+  if(e.code === 'Escape') closeAllPanels();
+  if((e.metaKey || e.ctrlKey) && e.code === 'KeyK') { e.preventDefault(); openSearch(); }
+}
+
+function createParticles() {
+  const count = window.innerWidth < 768 ? 30 : 60;
+  for(let i=0; i<count; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const x = Math.random() * 100;
+    const size = Math.random() * 2 + 1;
+    const dur = Math.random() * 15 + 10;
+    const delay = Math.random() * 10;
+    const op = Math.random() * 0.4 + 0.1;
+    p.style.cssText = `left:${x}%; width:${size}px; height:${size}px; --o:${op}; animation-duration:${dur}s; animation-delay:-${delay}s; top:110%;`;
+    particlesContainer.appendChild(p);
+  }
+}
+
+// Overlays
+function closeAllPanels() {
+  document.getElementById('overlay').classList.remove('open');
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('open'));
+}
+
+function openSearch() {
+  closeAllPanels();
+  document.getElementById('overlay').classList.add('open');
+  const p = document.getElementById('searchPanel');
+  p.classList.add('open');
+  const input = document.getElementById('searchInput');
+  input.focus();
+  renderSearch(input.value);
+}
+
+function renderSearch(query) {
+  const res = document.getElementById('searchResults');
+  res.innerHTML = '';
+  const filtered = query 
+    ? tracks.filter(t => t.title.toLowerCase().includes(query.toLowerCase()) || t.artist.toLowerCase().includes(query.toLowerCase()))
+    : tracks;
+    
+  filtered.forEach(t => {
+    const item = document.createElement('div');
+    item.className = `track-item ${tracks[state.cur].id === t.id ? 'active' : ''}`;
+    item.innerHTML = `
+      <div class="ti-img ${t.class}"><div class="layer cover-orb" style="filter:blur(5px)"></div></div>
+      <div class="ti-info">
+        <div class="ti-title">${t.title}</div>
+        <div class="ti-artist">${t.artist} • ${t.album}</div>
+      </div>
+      <div class="ti-meta">${formatTime(t.dur)}</div>
+    `;
+    item.onclick = () => { 
+      const idx = tracks.findIndex(x => x.id === t.id);
+      goToTrack(idx);
+      closeAllPanels();
+    };
+    res.appendChild(item);
+  });
+}
+
+function openQueue() {
+  closeAllPanels();
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('queuePanel').classList.add('open');
+  renderQueue();
+}
+
+function renderQueue() {
+  const list = document.getElementById('queueList');
+  list.innerHTML = '';
+  tracks.forEach((t, i) => {
+    const item = document.createElement('div');
+    item.className = `track-item ${state.cur === i ? 'active' : ''}`;
+    item.innerHTML = `
+      <div class="ti-img ${t.class}"><div class="layer cover-orb" style="filter:blur(5px)"></div></div>
+      <div class="ti-info">
+        <div class="ti-title">${t.title}</div>
+        <div class="ti-artist">${t.artist}</div>
+      </div>
+      <div class="ti-meta">${formatTime(t.dur)}</div>
+    `;
+    item.onclick = () => goToTrack(i);
+    list.appendChild(item);
+  });
+}
+
+function openLyrics() {
+  closeAllPanels();
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('lyricsPanel').classList.add('open');
+  renderLyrics();
+}
+
+function renderLyrics() {
+  const cont = document.getElementById('lyricsContent');
+  cont.innerHTML = '';
+  const track = tracks[state.cur];
+  track.lyrics.forEach(line => {
+    const div = document.createElement('div');
+    div.className = 'lyric-line';
+    div.innerText = line;
+    cont.appendChild(div);
+  });
+}
+
+function save() {
+  localStorage.setItem('auralis_state', JSON.stringify({
+    vol: state.vol,
+    muted: state.muted
+  }));
+}
+
+// Wheel carousel
+window.addEventListener('wheel', (e) => {
+  if(document.querySelector('.panel.open')) return;
+  if(Math.abs(e.deltaY) > 50) {
+    if(e.deltaY > 0) nextTrack();
+    else prevTrack();
+  }
+}, {passive:true});
+
+// Swipe carousel
+let touchStartX = 0;
+carousel.addEventListener('touchstart', e => touchStartX = e.touches[0].clientX);
+carousel.addEventListener('touchend', e => {
+  const diff = touchStartX - e.changedTouches[0].clientX;
+  if(Math.abs(diff) > 50) {
+    if(diff > 0) nextTrack();
+    else prevTrack();
+  }
+});
+
+init();
+</script>
+</body>
+</html>
