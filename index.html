@@ -1,1680 +1,930 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#0a0a0c">
-<title>Auralis Vision Ultra</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#061014">
+<title>Cinematic Spatial Music OS</title>
 <style>
-/* ==========================================================================
-   CSS VARIABLES & THEME
-   ========================================================================== */
-:root {
-    --bg-base: #050507;
-    --surface-glass: rgba(25, 25, 30, 0.4);
-    --surface-glass-hover: rgba(35, 35, 45, 0.6);
-    --surface-border: rgba(255, 255, 255, 0.08);
-    --text-main: #ffffff;
-    --text-muted: rgba(255, 255, 255, 0.6);
-    --text-dim: rgba(255, 255, 255, 0.4);
-    
-    --accent-a: #8e2de2;
-    --accent-b: #4a00e0;
-    --accent-c: #00c6ff;
-    --glow-a: rgba(142,45,226,0.3);
-    --glow-b: rgba(74,0,224,0.3);
-    
-    --font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    --safe-bottom: env(safe-area-inset-bottom, 0px);
-    --player-height-mobile: 160px;
-    --player-height-desktop: 90px;
-    --transition-smooth: 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+/* ===== MODULE: DESIGN TOKENS ===== */
+:root{
+  --bg:#03070b;
+  --ink:#f4fbff;
+  --muted:rgba(235,250,255,.68);
+  --faint:rgba(235,250,255,.38);
+  --glass:rgba(14,28,38,.42);
+  --glass-strong:rgba(18,38,52,.58);
+  --accent:#42e8ff;
+  --accent-rgb:66,232,255;
+  --glow:rgba(66,232,255,.58);
+  --fog-tint:rgba(31,190,220,.22);
+  --grid-color:rgba(66,232,255,.38);
+  --warmth:rgba(255,190,120,.06);
+  --stage-w:min(100vw,177.7778vh);
+  --stage-h:min(100vh,56.25vw);
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-bottom:env(safe-area-inset-bottom,0px);
+  --ease:cubic-bezier(.16,1,.3,1);
+}
+*{box-sizing:border-box}
+html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#020509;color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Inter","Segoe UI",Roboto,Arial,sans-serif}
+body{min-width:320px;touch-action:manipulation;-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision}
+button,input{font:inherit;color:inherit}
+button{border:0;background:none;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+svg{display:block;pointer-events:none}
+.hidden{display:none!important}
+.glass{
+  background:linear-gradient(180deg,rgba(255,255,255,.16),rgba(255,255,255,.055) 34%,rgba(0,0,0,.12)),var(--glass);
+  border:1px solid rgba(255,255,255,.18);
+  border-bottom-color:rgba(0,0,0,.34);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 22px 70px rgba(0,0,0,.32),0 0 48px rgba(var(--accent-rgb),.12);
+  backdrop-filter:blur(24px) saturate(160%);
+  -webkit-backdrop-filter:blur(24px) saturate(160%);
+}
+.touch{min-width:44px;min-height:44px;display:grid;place-items:center;border-radius:999px;position:relative;overflow:hidden;transition:transform .18s var(--ease),background .18s var(--ease),opacity .18s var(--ease)}
+.touch:hover{background:rgba(255,255,255,.1)}
+.touch:active{transform:scale(.94)}
+.ripple-span{position:absolute;border-radius:50%;pointer-events:none;background:radial-gradient(circle,rgba(255,255,255,.55),rgba(255,255,255,0) 70%);transform:translate(-50%,-50%) scale(0);animation:ripple .72s var(--ease) forwards}
+@keyframes ripple{to{transform:translate(-50%,-50%) scale(4.2);opacity:0}}
+
+/* ===== MODULE: LAYERED SPATIAL WORLD ===== */
+#app{position:fixed;inset:0;overflow:hidden;background:var(--bg);isolation:isolate}
+#stage-wrap{position:absolute;left:50%;top:50%;width:var(--stage-w);height:var(--stage-h);transform:translate(-50%,-50%);overflow:visible}
+#scene-bg,#starfield,#grid-floor,#webgl-canvas,#carousel-stage,#waveform-canvas,#top-bar,#bottom-bar,#overlays{position:absolute}
+#scene-bg{inset:0;z-index:0;background:
+  radial-gradient(circle at 50% 50%,rgba(1,8,12,.8) 0 22%,rgba(3,12,19,.82) 45%,rgba(4,8,22,.96) 70%,#010205 100%),
+  radial-gradient(circle at 8% 9%,rgba(44,180,255,.18),transparent 36%),
+  radial-gradient(circle at 92% 10%,rgba(84,60,255,.16),transparent 32%),
+  radial-gradient(circle at 70% 96%,var(--warmth),transparent 36%);
+}
+#scene-bg:before{content:"";position:absolute;inset:-20%;background:
+  radial-gradient(circle at 18% 36%,var(--fog-tint),transparent 28%),
+  radial-gradient(circle at 76% 30%,rgba(70,90,255,.18),transparent 26%),
+  radial-gradient(circle at 52% 80%,rgba(28,255,210,.12),transparent 34%);
+  filter:blur(45px);mix-blend-mode:screen;opacity:.92;animation:fogDrift 28s ease-in-out infinite alternate;will-change:transform,opacity}
+#scene-bg:after{content:"";position:absolute;inset:0;background:
+  radial-gradient(ellipse at center,transparent 35%,rgba(0,0,0,.34) 72%,rgba(0,0,0,.82) 100%),
+  repeating-radial-gradient(circle at 17% 23%,rgba(255,255,255,.028) 0 1px,transparent 1px 3px);
+  opacity:.8;mix-blend-mode:overlay;animation:grain 1.8s steps(4) infinite}
+@keyframes fogDrift{0%{transform:translate3d(-3%,-2%,0) scale(1)}100%{transform:translate3d(4%,3%,0) scale(1.08)}}
+@keyframes grain{0%,100%{transform:translate(0,0)}25%{transform:translate(-1%,1%)}50%{transform:translate(1%,-1%)}75%{transform:translate(.5%,.5%)}}
+#starfield{inset:-8%;z-index:1;transform-style:preserve-3d;pointer-events:none}
+.star-layer{position:absolute;inset:0;background-repeat:repeat;opacity:.55;will-change:transform}
+.star-layer.l1{background-image:radial-gradient(circle,rgba(255,255,255,.8) 0 1px,transparent 1.5px);background-size:92px 92px;filter:blur(.2px)}
+.star-layer.l2{background-image:radial-gradient(circle,rgba(135,235,255,.75) 0 1px,transparent 1.6px);background-size:154px 154px;opacity:.38;filter:blur(.45px)}
+.star-layer.l3{background-image:radial-gradient(circle,rgba(255,255,255,.62) 0 1px,transparent 1.8px);background-size:238px 238px;opacity:.24;filter:blur(.8px)}
+#grid-floor{left:-16%;right:-16%;bottom:-15%;height:55%;z-index:2;perspective:820px;opacity:.9;pointer-events:none;overflow:hidden;mask-image:linear-gradient(to top,black 0%,rgba(0,0,0,.92) 32%,transparent 100%);-webkit-mask-image:linear-gradient(to top,black 0%,rgba(0,0,0,.92) 32%,transparent 100%)}
+#grid-floor:before{content:"";position:absolute;inset:-35% -20% 0;transform:rotateX(68deg) translateY(14%);transform-origin:50% 100%;background-image:
+  linear-gradient(to right,var(--grid-color) 1px,transparent 1px),
+  linear-gradient(to bottom,var(--grid-color) 1px,transparent 1px);
+  background-size:72px 72px;box-shadow:0 0 40px var(--glow);animation:gridDrift 14s linear infinite;opacity:.56}
+#grid-floor:after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(2,8,12,.18),rgba(2,8,12,.62) 45%,rgba(2,8,12,.96));}
+@keyframes gridDrift{to{background-position:0 72px,0 72px}}
+#webgl-canvas{inset:0;z-index:3;pointer-events:none}
+#carousel-stage{inset:0;z-index:4;perspective:1800px;transform-style:preserve-3d;pointer-events:none;animation:sceneBreath 7s ease-in-out infinite}
+@keyframes sceneBreath{50%{transform:scale(1.012)}}
+#waveform-canvas{left:50%;top:50%;z-index:5;width:min(56vh,54vw);height:min(56vh,54vw);transform:translate(-50%,-50%);pointer-events:none;opacity:.95;filter:drop-shadow(0 0 22px var(--glow))}
+
+/* ===== MODULE: CAROUSEL CARDS ===== */
+.card{
+  position:absolute;left:50%;top:47%;width:clamp(150px,18vw,285px);aspect-ratio:3/4.2;border-radius:22px;overflow:visible;
+  transform-style:preserve-3d;pointer-events:auto;will-change:transform,opacity,filter;cursor:pointer;
+}
+.card-shell{position:absolute;inset:0;border-radius:22px;overflow:hidden;background:#111;box-shadow:0 42px 90px rgba(0,0,0,.48),0 0 60px rgba(var(--accent-rgb),.14);transform:translateZ(1px)}
+.card-art{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scale(1.025);filter:saturate(1.08) contrast(1.04)}
+.card-glass{position:absolute;inset:0;border-radius:22px;background:linear-gradient(180deg,rgba(255,255,255,.18),rgba(255,255,255,.04) 42%,rgba(0,0,0,.14));border:1px solid rgba(255,255,255,.22);border-bottom-color:rgba(0,0,0,.42);box-shadow:inset 0 1px 0 rgba(255,255,255,.36),inset 0 -1px 0 rgba(0,0,0,.28)}
+.card-sheen{position:absolute;left:-25%;top:-35%;width:70%;height:120%;transform:rotate(18deg);background:linear-gradient(90deg,transparent,rgba(255,255,255,.24),transparent);filter:blur(10px);opacity:.5}
+.card-meta{position:absolute;left:0;right:0;bottom:0;padding:56px 18px 18px;background:linear-gradient(to top,rgba(0,0,0,.76),rgba(0,0,0,.36) 54%,transparent);border-radius:0 0 22px 22px;text-shadow:0 2px 18px rgba(0,0,0,.75)}
+.card-title{font-size:clamp(18px,2vw,28px);font-weight:740;letter-spacing:-.04em;line-height:.96}
+.card-artist{margin-top:7px;color:rgba(245,252,255,.76);font-size:clamp(12px,1vw,15px);font-weight:520}
+.card-reflection{position:absolute;left:5%;right:5%;top:103%;height:35%;border-radius:0 0 24px 24px;background:var(--reflection) center top/cover no-repeat;transform:scaleY(-1) rotateX(32deg);transform-origin:top;opacity:.22;filter:blur(3px);mask-image:linear-gradient(to bottom,rgba(0,0,0,.6),transparent 84%);-webkit-mask-image:linear-gradient(to bottom,rgba(0,0,0,.6),transparent 84%);pointer-events:none}
+.card.active .card-shell{box-shadow:0 48px 110px rgba(0,0,0,.56),0 0 95px var(--glow)}
+.vinyl-ring,.halo-ring{position:absolute;inset:-18px;border-radius:28px;pointer-events:none;opacity:0;transform:translateZ(-28px)}
+.vinyl-ring{background:conic-gradient(from 0deg,transparent,rgba(var(--accent-rgb),.16),transparent 38%,rgba(255,255,255,.11),transparent 72%);filter:blur(1px);animation:spin 6s linear infinite}
+.halo-ring{inset:-34px;border:1px solid rgba(var(--accent-rgb),.34);box-shadow:0 0 30px var(--glow),inset 0 0 24px rgba(var(--accent-rgb),.18);animation:orbit 4.5s linear infinite}
+.card.active.playing .vinyl-ring,.card.active.playing .halo-ring{opacity:1}
+@keyframes spin{to{transform:translateZ(-28px) rotate(360deg)}}
+@keyframes orbit{to{transform:translateZ(-24px) rotateZ(-360deg)}}
+
+/* ===== MODULE: NAVIGATION AND PLAYER GLASS ===== */
+#top-bar{left:50%;top:calc(18px + var(--safe-top));z-index:7;width:min(840px,calc(100% - 32px));height:58px;transform:translateX(-50%);border-radius:999px;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px;padding:7px 9px;pointer-events:auto}
+.nav-cluster{display:flex;align-items:center;gap:4px}
+.search-pill{height:44px;border-radius:999px;background:rgba(255,255,255,.08);display:flex;align-items:center;gap:10px;padding:0 16px;min-width:0;box-shadow:inset 0 1px 0 rgba(255,255,255,.12)}
+.search-title{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:650;letter-spacing:-.02em}
+.avatar{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-weight:800;background:linear-gradient(135deg,var(--accent),#7869ff 48%,#fff);color:#041018;box-shadow:0 0 25px var(--glow)}
+#bottom-bar{left:50%;bottom:calc(18px + var(--safe-bottom));z-index:7;width:min(980px,calc(100% - 28px));min-height:82px;transform:translateX(-50%);border-radius:30px;display:grid;grid-template-columns:minmax(170px,1fr) minmax(280px,1.4fr) minmax(180px,1fr);align-items:center;gap:18px;padding:13px 16px;pointer-events:auto}
+.now{display:flex;align-items:center;gap:12px;min-width:0}
+.now img{width:54px;height:54px;border-radius:14px;object-fit:cover;box-shadow:0 12px 28px rgba(0,0,0,.36)}
+.now-title,.now-artist{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.now-title{font-weight:720;letter-spacing:-.03em}
+.now-artist{margin-top:3px;color:var(--muted);font-size:13px}
+.controls{display:grid;gap:8px;min-width:0}
+.control-row{display:flex;justify-content:center;align-items:center;gap:12px}
+.play-btn{width:54px;height:54px;background:radial-gradient(circle at 35% 28%,rgba(255,255,255,.55),rgba(255,255,255,.08) 36%,rgba(var(--accent-rgb),.23));box-shadow:0 0 34px var(--glow),inset 0 1px 0 rgba(255,255,255,.36)}
+.progress-row{display:grid;grid-template-columns:42px 1fr 42px;align-items:center;gap:9px;color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}
+.progress{height:22px;position:relative;cursor:pointer}
+.progress:before{content:"";position:absolute;left:0;right:0;top:10px;height:3px;border-radius:999px;background:rgba(255,255,255,.16)}
+.progress-fill{position:absolute;left:0;top:10px;height:3px;border-radius:999px;background:linear-gradient(90deg,var(--accent),#fff);box-shadow:0 0 18px var(--glow);width:0%}
+.scrubber{position:absolute;top:50%;left:0;width:14px;height:14px;border-radius:50%;background:#fff;box-shadow:0 0 18px var(--glow);transform:translate(-50%,-50%)}
+.player-tools{display:flex;align-items:center;justify-content:flex-end;gap:8px;min-width:0}
+.volume{width:112px;height:22px;position:relative;cursor:pointer}
+.volume:before{content:"";position:absolute;left:0;right:0;top:10px;height:3px;border-radius:999px;background:rgba(255,255,255,.17)}
+.volume-fill{position:absolute;left:0;top:10px;height:3px;border-radius:999px;background:var(--accent);box-shadow:0 0 12px var(--glow);width:72%}
+
+/* ===== MODULE: OVERLAYS ===== */
+#overlays{inset:0;z-index:8;pointer-events:none}
+.panel{position:absolute;right:24px;top:96px;width:min(360px,calc(100% - 48px));max-height:calc(100% - 210px);border-radius:28px;padding:18px;pointer-events:auto;transform:translateX(120%);opacity:0}
+.panel h2{margin:0 0 14px;font-size:19px;letter-spacing:-.04em}
+.queue-item{display:grid;grid-template-columns:48px 1fr auto;align-items:center;gap:12px;padding:10px;border-radius:18px;transform-style:preserve-3d;cursor:pointer}
+.queue-item:hover{background:rgba(255,255,255,.08)}
+.queue-item img{width:48px;height:48px;border-radius:12px;object-fit:cover}
+.queue-item b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.queue-item span{display:block;color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#lyrics-panel{left:24px;right:auto}
+.lyrics-line{margin:10px 0;color:var(--muted);line-height:1.45}
+#toast{position:absolute;left:50%;top:calc(90px + var(--safe-top));transform:translate(-50%,-20px);border-radius:999px;padding:12px 18px;opacity:0;white-space:nowrap;pointer-events:none}
+#view-hint{position:absolute;left:50%;bottom:calc(118px + var(--safe-bottom));transform:translateX(-50%);border-radius:999px;padding:10px 15px;color:var(--muted);opacity:.72;font-size:13px}
+
+/* ===== MODULE: RESPONSIVE AND ACCESSIBILITY ===== */
+@media (max-width:760px){
+  #top-bar{height:54px;width:calc(100% - 20px);gap:6px}
+  .search-pill{padding:0 11px}
+  #bottom-bar{grid-template-columns:1fr;gap:10px;min-height:160px;border-radius:28px;padding:13px;width:calc(100% - 20px)}
+  .now{justify-content:center}
+  .player-tools{justify-content:center}
+  .card{width:clamp(132px,38vw,205px);top:42%}
+  #waveform-canvas{width:min(68vw,44vh);height:min(68vw,44vh)}
+  #lyrics-panel{display:none}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*:before,*:after{animation-duration:.001ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important}
+  #carousel-stage{animation:none}
 }
-
-/* ==========================================================================
-   RESET & BASE
-   ========================================================================== */
-*, *::before, *::after {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
-body, html {
-    width: 100%;
-    height: 100%;
-    background-color: var(--bg-base);
-    color: var(--text-main);
-    font-family: var(--font-family);
-    overflow: hidden;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-}
-
-button {
-    background: none;
-    border: none;
-    color: inherit;
-    cursor: pointer;
-    font: inherit;
-    outline: none;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
-}
-
-button:disabled {
-    opacity: 0.3;
-    cursor: not-allowed;
-}
-
-input, textarea, select {
-    font-family: inherit;
-    outline: none;
-}
-
-a { color: inherit; text-decoration: none; }
-
-ul { list-style: none; }
-
-/* ==========================================================================
-   BACKGROUND AURORA
-   ========================================================================== */
-#aurora-bg {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    z-index: 0;
-    pointer-events: none;
-    overflow: hidden;
-    background: radial-gradient(circle at 50% 50%, var(--bg-base) 0%, #000 100%);
-    transition: --accent-a var(--transition-smooth), --accent-b var(--transition-smooth);
-}
-
-.aurora-blob {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(80px);
-    opacity: 0.6;
-    animation: float 20s infinite alternate ease-in-out;
-    transition: background var(--transition-smooth);
-}
-
-.blob-1 { top: -10%; left: -10%; width: 50vw; height: 50vw; background: var(--glow-a); animation-delay: 0s; }
-.blob-2 { bottom: -20%; right: -10%; width: 60vw; height: 60vw; background: var(--glow-b); animation-delay: -5s; }
-.blob-3 { top: 40%; left: 30%; width: 40vw; height: 40vw; background: rgba(0, 198, 255, 0.15); animation-delay: -10s; }
-
-@keyframes float {
-    0% { transform: translate(0, 0) scale(1); }
-    100% { transform: translate(10%, 10%) scale(1.1); }
-}
-
-#noise-overlay {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    z-index: 1;
-    pointer-events: none;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.04'/%3E%3C/svg%3E");
-}
-
-/* ==========================================================================
-   APP LAYOUT
-   ========================================================================== */
-#app {
-    position: relative;
-    z-index: 2;
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    height: 100dvh;
-}
-
-#main-wrapper {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow-y: auto;
-    overflow-x: hidden;
-    padding-bottom: calc(var(--player-height-mobile) + var(--safe-bottom) + 20px);
-    scroll-behavior: smooth;
-}
-
-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px;
-    background: linear-gradient(to bottom, rgba(5,5,7,0.8), transparent);
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    backdrop-filter: blur(10px);
-}
-
-.logo {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-weight: 700;
-    font-size: 1.2rem;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    background: linear-gradient(45deg, var(--accent-a), var(--accent-c));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
-.header-controls {
-    display: flex;
-    gap: 12px;
-}
-
-.btn-glass {
-    background: var(--surface-glass);
-    border: 1px solid var(--surface-border);
-    border-radius: 12px;
-    padding: 8px 16px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--text-main);
-    backdrop-filter: blur(10px);
-}
-
-.btn-glass:hover {
-    background: var(--surface-glass-hover);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-}
-
-.btn-icon {
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    background: var(--surface-glass);
-    border: 1px solid var(--surface-border);
-    backdrop-filter: blur(10px);
-}
-.btn-icon:hover { background: var(--surface-glass-hover); }
-.btn-icon svg { width: 20px; height: 20px; fill: currentColor; }
-
-/* ==========================================================================
-   VIEWS
-   ========================================================================== */
-.view {
-    display: none;
-    flex-direction: column;
-    padding: 20px;
-    gap: 30px;
-    animation: fadeIn 0.4s ease forwards;
-}
-
-.view.active { display: flex; }
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* ==========================================================================
-   HERO / NOW PLAYING VISUAL
-   ========================================================================== */
-#hero-section {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    gap: 20px;
-    margin-top: 20px;
-}
-
-.hero-cover-wrapper {
-    position: relative;
-    width: 240px;
-    height: 240px;
-    border-radius: 20px;
-    perspective: 1000px;
-}
-
-.hero-cover {
-    width: 100%;
-    height: 100%;
-    border-radius: 20px;
-    object-fit: cover;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 40px var(--glow-a);
-    transition: transform var(--transition-smooth), opacity var(--transition-smooth), filter var(--transition-smooth);
-    background: var(--surface-glass);
-}
-
-.hero-info {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    max-width: 80%;
-    transition: transform var(--transition-smooth), opacity var(--transition-smooth);
-}
-
-.hero-title {
-    font-size: 1.8rem;
-    font-weight: 700;
-    line-height: 1.2;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.hero-artist {
-    font-size: 1.1rem;
-    color: var(--text-muted);
-}
-
-.badges {
-    display: flex;
-    gap: 8px;
-    justify-content: center;
-    flex-wrap: wrap;
-    margin-top: 5px;
-}
-
-.badge {
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    padding: 4px 8px;
-    border-radius: 8px;
-    background: rgba(255,255,255,0.1);
-    border: 1px solid rgba(255,255,255,0.05);
-    letter-spacing: 0.5px;
-    font-weight: 600;
-}
-
-.badge.quality-high { background: linear-gradient(45deg, #d4af37, #f3e5ab); color: #000; }
-.badge.quality-lossless { background: linear-gradient(45deg, #00c6ff, #0072ff); color: #fff; }
-
-/* Track Changing Animation */
-.track-changing .hero-cover {
-    transform: scale(0.92) rotateY(-5deg);
-    opacity: 0;
-    filter: blur(10px);
-}
-.track-changing .hero-info {
-    transform: translateY(10px);
-    opacity: 0;
-}
-
-/* ==========================================================================
-   LIBRARY SECTION
-   ========================================================================== */
-.library-controls {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    margin-bottom: 20px;
-}
-
-.search-box {
-    flex: 1;
-    min-width: 200px;
-    background: var(--surface-glass);
-    border: 1px solid var(--surface-border);
-    border-radius: 12px;
-    padding: 12px 16px;
-    color: var(--text-main);
-    font-size: 0.95rem;
-    backdrop-filter: blur(10px);
-}
-.search-box::placeholder { color: var(--text-muted); }
-
-.select-box {
-    background: var(--surface-glass);
-    border: 1px solid var(--surface-border);
-    border-radius: 12px;
-    padding: 12px 16px;
-    color: var(--text-main);
-    font-size: 0.95rem;
-    backdrop-filter: blur(10px);
-    appearance: none;
-    cursor: pointer;
-}
-.select-box option { background: var(--bg-base); color: var(--text-main); }
-
-.track-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.track-card {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    padding: 10px;
-    border-radius: 16px;
-    background: var(--surface-glass);
-    border: 1px solid transparent;
-    transition: all 0.2s ease;
-    cursor: pointer;
-}
-
-.track-card:hover {
-    background: var(--surface-glass-hover);
-    border-color: var(--surface-border);
-}
-
-.track-card.active {
-    background: rgba(255,255,255,0.1);
-    border-color: var(--accent-a);
-    box-shadow: 0 0 20px var(--glow-a);
-}
-
-.track-card-cover {
-    width: 50px;
-    height: 50px;
-    border-radius: 10px;
-    object-fit: cover;
-    background: #222;
-}
-
-.track-card-info {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.track-card-title {
-    font-weight: 600;
-    font-size: 1rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-.track-card.active .track-card-title { color: var(--accent-c); }
-
-.track-card-artist {
-    font-size: 0.85rem;
-    color: var(--text-muted);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.track-card-meta {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 0.8rem;
-    color: var(--text-dim);
-}
-
-.track-card-actions {
-    display: flex;
-    gap: 5px;
-    opacity: 0.5;
-    transition: opacity 0.2s;
-}
-.track-card:hover .track-card-actions { opacity: 1; }
-
-.empty-state {
-    text-align: center;
-    padding: 60px 20px;
-    color: var(--text-muted);
-    background: var(--surface-glass);
-    border-radius: 20px;
-    border: 1px dashed var(--surface-border);
-}
-.empty-state h3 { font-size: 1.5rem; margin-bottom: 10px; color: var(--text-main); }
-.empty-state p { margin-bottom: 20px; font-size: 0.95rem; }
-
-/* ==========================================================================
-   CREATOR STUDIO
-   ========================================================================== */
-.studio-stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 15px;
-    margin-bottom: 20px;
-}
-.stat-card {
-    background: var(--surface-glass);
-    border: 1px solid var(--surface-border);
-    border-radius: 16px;
-    padding: 15px;
-    text-align: center;
-}
-.stat-val { font-size: 1.8rem; font-weight: 700; color: var(--accent-c); }
-.stat-label { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; margin-top: 5px; }
-
-#manifestPreview {
-    width: 100%;
-    height: 300px;
-    background: rgba(0,0,0,0.5);
-    border: 1px solid var(--surface-border);
-    border-radius: 12px;
-    padding: 15px;
-    color: #00ffcc;
-    font-family: monospace;
-    font-size: 0.85rem;
-    resize: vertical;
-    white-space: pre;
-    overflow: auto;
-}
-
-.studio-actions {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-
-.instructions {
-    background: rgba(255,255,255,0.05);
-    padding: 15px;
-    border-radius: 12px;
-    font-size: 0.9rem;
-    color: var(--text-muted);
-    line-height: 1.5;
-}
-.instructions code { background: #000; padding: 2px 6px; border-radius: 4px; color: #fff; }
-
-/* ==========================================================================
-   BOTTOM PLAYER (MOBILE FIRST)
-   ========================================================================== */
-#bottomPlayer {
-    position: fixed;
-    bottom: 0; left: 0; right: 0;
-    background: rgba(10, 10, 14, 0.85);
-    backdrop-filter: blur(30px);
-    -webkit-backdrop-filter: blur(30px);
-    border-top: 1px solid var(--surface-border);
-    padding: 12px 16px calc(12px + var(--safe-bottom));
-    z-index: 100;
-    display: grid;
-    grid-template-rows: auto auto auto;
-    gap: 12px;
-    transition: transform 0.3s ease;
-}
-
-/* Row 1: Info */
-.player-track-row {
-    display: grid;
-    grid-template-columns: 44px minmax(0, 1fr) 44px;
-    gap: 12px;
-    align-items: center;
-}
-.player-cover {
-    width: 44px; height: 44px;
-    border-radius: 8px;
-    object-fit: cover;
-    background: #222;
-}
-.player-info-text {
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-}
-.player-title {
-    font-size: 0.95rem;
-    font-weight: 600;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-.player-artist {
-    font-size: 0.8rem;
-    color: var(--text-muted);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-/* Row 2: Progress */
-.player-progress-row {
-    display: grid;
-    grid-template-columns: 40px 1fr 40px;
-    gap: 10px;
-    align-items: center;
-    font-size: 0.75rem;
-    color: var(--text-dim);
-    font-variant-numeric: tabular-nums;
-}
-.progress-container {
-    position: relative;
-    height: 24px; /* Touch target */
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-}
-.progress-bar-bg {
-    width: 100%;
-    height: 4px;
-    background: rgba(255,255,255,0.2);
-    border-radius: 2px;
-    position: relative;
-    overflow: hidden;
-}
-.progress-bar-fill {
-    position: absolute;
-    top: 0; left: 0; bottom: 0;
-    width: 0%;
-    background: linear-gradient(90deg, var(--accent-a), var(--accent-c));
-    border-radius: 2px;
-    pointer-events: none;
-}
-
-/* Row 3: Controls */
-.player-controls-row {
-    display: flex;
-    justify-content: space-evenly;
-    align-items: center;
-}
-
-.control-btn {
-    width: 44px; height: 44px;
-    display: flex; justify-content: center; align-items: center;
-    color: var(--text-main);
-    border-radius: 50%;
-}
-.control-btn svg { width: 22px; height: 22px; fill: currentColor; }
-.control-btn:active { background: rgba(255,255,255,0.1); }
-.control-btn.active { color: var(--accent-c); }
-
-.play-btn {
-    width: 56px; height: 56px;
-    background: var(--text-main);
-    color: var(--bg-base);
-    box-shadow: 0 4px 15px rgba(255,255,255,0.2);
-}
-.play-btn svg { width: 28px; height: 28px; fill: currentColor; }
-.play-btn:active { transform: scale(0.95); box-shadow: none; }
-
-/* Volume & Desktop Adjustments */
-.volume-container { display: none; }
-
-@media (min-width: 768px) {
-    /* Multi-column app layout */
-    #main-wrapper { padding-bottom: calc(var(--player-height-desktop) + 20px); }
-    
-    .view {
-        padding: 40px;
-    }
-    
-    #hero-section {
-        flex-direction: row;
-        text-align: left;
-        gap: 40px;
-        margin-bottom: 40px;
-    }
-    .hero-cover-wrapper { width: 300px; height: 300px; }
-    .hero-title { font-size: 3rem; }
-    .hero-artist { font-size: 1.5rem; }
-    .badges { justify-content: flex-start; }
-
-    /* Horizontal Bottom Player */
-    #bottomPlayer {
-        height: var(--player-height-desktop);
-        grid-template-rows: 1fr;
-        grid-template-columns: 300px 1fr 200px;
-        align-items: center;
-        padding: 0 20px calc(var(--safe-bottom)) 20px;
-    }
-    
-    .player-track-row { grid-template-columns: 56px minmax(0, 1fr) 44px; gap: 15px; }
-    .player-cover { width: 56px; height: 56px; }
-    
-    .player-center-col {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        max-width: 600px;
-        margin: 0 auto;
-        width: 100%;
-        gap: 5px;
-    }
-    
-    /* Re-route rows into center col logic using JS or structural nesting, but for CSS grid we reposition */
-    #bottomPlayer { display: flex; justify-content: space-between; }
-    .player-track-row { width: 30%; }
-    .player-center-col { width: 40%; display: flex; flex-direction: column; align-items: center; gap: 8px; }
-    .player-controls-row { width: 100%; justify-content: center; gap: 20px; }
-    .player-progress-row { width: 100%; }
-    
-    .volume-container {
-        display: flex;
-        align-items: center;
-        width: 25%;
-        justify-content: flex-end;
-        gap: 10px;
-    }
-    .volume-slider {
-        width: 100px;
-        height: 4px;
-        background: rgba(255,255,255,0.2);
-        border-radius: 2px;
-        appearance: none;
-        outline: none;
-    }
-    .volume-slider::-webkit-slider-thumb {
-        appearance: none;
-        width: 12px; height: 12px;
-        border-radius: 50%;
-        background: #fff;
-        cursor: pointer;
-    }
-}
-
-/* ==========================================================================
-   MODALS & TOASTS
-   ========================================================================== */
-#toastRegion {
-    position: fixed;
-    bottom: calc(var(--player-height-mobile) + var(--safe-bottom) + 20px);
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    z-index: 1000;
-    pointer-events: none;
-}
-@media (min-width: 768px) {
-    #toastRegion { bottom: calc(var(--player-height-desktop) + 20px); }
-}
-
-.toast {
-    background: rgba(30, 30, 35, 0.95);
-    border: 1px solid var(--surface-border);
-    backdrop-filter: blur(10px);
-    color: #fff;
-    padding: 12px 24px;
-    border-radius: 30px;
-    font-size: 0.9rem;
-    font-weight: 500;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    animation: toastIn 0.3s cubic-bezier(0.25, 1, 0.5, 1) forwards;
-    opacity: 0;
-    transform: translateY(20px);
-}
-.toast.toast-error { border-color: #ff4757; }
-.toast.toast-success { border-color: #2ed573; }
-.toast.fade-out { animation: toastOut 0.3s forwards; }
-
-@keyframes toastIn { to { opacity: 1; transform: translateY(0); } }
-@keyframes toastOut { to { opacity: 0; transform: translateY(-20px); } }
-
-#fileInput { display: none; }
 </style>
 </head>
 <body>
-
-<div id="aurora-bg">
-    <div class="aurora-blob blob-1"></div>
-    <div class="aurora-blob blob-2"></div>
-    <div class="aurora-blob blob-3"></div>
+<div id="app" aria-label="Cinematic spatial music interface">
+  <div id="stage-wrap">
+<div id="scene-bg"></div>
+<div id="starfield" aria-hidden="true">
+<div class="star-layer l1"></div>
+<div class="star-layer l2"></div>
+<div class="star-layer l3"></div>
 </div>
-<div id="noise-overlay"></div>
+<div id="grid-floor" aria-hidden="true"></div>
+<canvas id="webgl-canvas" aria-hidden="true"></canvas>
+<div id="carousel-stage" aria-label="Spatial album carousel"></div>
+<canvas id="waveform-canvas" aria-hidden="true"></canvas>
 
-<input type="file" id="fileInput" accept="audio/*" multiple>
-<audio id="audio" preload="metadata"></audio>
+<nav id="top-bar" class="glass" aria-label="Top navigation">
+<div class="nav-cluster">
+<button class="touch js-ripple" id="back-btn" aria-label="Previous album"><svg width="21" height="21" viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+<button class="touch js-ripple" id="forward-btn" aria-label="Next album"><svg width="21" height="21" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+<button class="touch js-ripple" id="sidebar-btn" aria-label="Toggle queue"><svg width="21" height="21" viewBox="0 0 24 24" fill="none"><rect x="4" y="5" width="16" height="14" rx="3" stroke="currentColor" stroke-width="2"/><path d="M9 5v14" stroke="currentColor" stroke-width="2"/></svg></button>
+</div>
+<div class="search-pill" role="search">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M16.5 16.5L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+<div class="search-title" id="search-title">Black Hole</div>
+</div>
+<div class="nav-cluster">
+<button class="touch js-ripple" id="share-btn" aria-label="Share"><svg width="21" height="21" viewBox="0 0 24 24" fill="none"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 14v3a3 3 0 003 3h8a3 3 0 003-3v-3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+<button class="touch js-ripple" id="more-btn" aria-label="More"><svg width="21" height="21" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></button>
+<button class="avatar js-ripple" id="avatar-btn" aria-label="Profile">∞</button>
+</div>
+</nav>
 
-<div id="app">
-    <div id="main-wrapper">
-        <header>
-            <div class="logo">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
-                Auralis
-            </div>
-            <div class="header-controls">
-                <button class="btn-glass" id="btn-import">Import Music</button>
-                <button class="btn-icon" id="btn-view-library" aria-label="Library" title="Library">
-                    <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-                </button>
-                <button class="btn-icon" id="btn-view-studio" aria-label="Creator Studio" title="Creator Studio">
-                    <svg viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                </button>
-            </div>
-        </header>
+<section id="bottom-bar" class="glass" aria-label="Player controls">
+<div class="now">
+<img id="now-art" alt="Current album art" crossorigin="anonymous">
+<div>
+<div class="now-title" id="now-title">Black Hole</div>
+<div class="now-artist" id="now-artist">Nova Drift</div>
+</div>
+</div>
+<div class="controls">
+<div class="control-row">
+<button class="touch js-ripple" id="prev-btn" aria-label="Previous track"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h2v14H6zM10 12l9-7v14z"/></svg></button>
+<button class="touch play-btn js-ripple" id="play-btn" aria-label="Play"><svg id="play-icon" width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
+<button class="touch js-ripple" id="next-btn" aria-label="Next track"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M16 5h2v14h-2zM5 19l9-7-9-7z"/></svg></button>
+</div>
+<div class="progress-row">
+<span id="elapsed">0:00</span>
+<div class="progress" id="progress" role="slider" aria-label="Playback progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0">
+<div class="progress-fill" id="progress-fill"></div>
+<div class="scrubber" id="scrubber"></div>
+</div>
+<span id="duration">0:00</span>
+</div>
+</div>
+<div class="player-tools">
+<button class="touch js-ripple" id="lyrics-btn" aria-label="Toggle lyrics"><svg width="21" height="21" viewBox="0 0 24 24" fill="none"><path d="M5 6h14M5 11h10M5 16h13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+<button class="touch js-ripple" id="queue-btn" aria-label="Toggle queue"><svg width="21" height="21" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+<button class="touch" aria-label="Volume icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 9v6h4l5 4V5L8 9H4z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></button>
+<div class="volume" id="volume" role="slider" aria-label="Volume" aria-valuemin="0" aria-valuemax="100" aria-valuenow="72" tabindex="0"><div class="volume-fill" id="volume-fill"></div></div>
+</div>
+</section>
 
-        <main id="view-library" class="view active">
-            
-            <div id="hero-section">
-                <div class="hero-cover-wrapper">
-                    <img id="hero-cover" class="hero-cover" src="" alt="Album Art">
-                </div>
-                <div class="hero-info">
-                    <h1 id="hero-title" class="hero-title">Welcome to Auralis</h1>
-                    <h2 id="hero-artist" class="hero-artist">Import local files to begin</h2>
-                    <div id="hero-badges" class="badges"></div>
-                </div>
-            </div>
-
-            <div class="library-controls">
-                <input type="text" id="searchInput" class="search-box" placeholder="Search tracks, artists...">
-                <select id="sortSelect" class="select-box">
-                    <option value="default">Default Sort</option>
-                    <option value="title">Title (A-Z)</option>
-                    <option value="artist">Artist (A-Z)</option>
-                    <option value="recent">Recently Added</option>
-                </select>
-                <select id="filterSelect" class="select-box">
-                    <option value="all">All Tracks</option>
-                    <option value="favorites">Favorites</option>
-                    <option value="lossless">Lossless / Hi-Res</option>
-                </select>
-            </div>
-
-            <div id="libraryList" class="track-list">
-                </div>
-        </main>
-
-        <main id="view-studio" class="view">
-            <h2>Creator Studio</h2>
-            <p style="color:var(--text-muted);">Generate GitHub Pages compatible manifests from your local imports.</p>
-            
-            <div class="studio-stats">
-                <div class="stat-card">
-                    <div class="stat-val" id="stat-total">0</div>
-                    <div class="stat-label">Total Tracks</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-val" id="stat-covers">0</div>
-                    <div class="stat-label">Embedded Covers</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-val" id="stat-lossless">0</div>
-                    <div class="stat-label">Lossless Files</div>
-                </div>
-            </div>
-
-            <div class="instructions">
-                <strong>Hosting on GitHub Pages:</strong><br>
-                1. Export this manifest to `manifest.json`.<br>
-                2. Put your exact audio files in a `/music/` folder next to it.<br>
-                3. Ensure filenames match the "src" in the manifest (slugified).<br>
-                4. Extract covers manually and put them in `/covers/`.
-            </div>
-
-            <textarea id="manifestPreview" readonly placeholder="Click Generate Manifest to preview JSON..."></textarea>
-
-            <div class="studio-actions">
-                <button class="btn-glass" id="btn-generate-manifest">Generate Manifest</button>
-                <button class="btn-glass" id="btn-copy-manifest">Copy JSON</button>
-                <button class="btn-glass" id="btn-download-manifest">Download manifest.json</button>
-            </div>
-        </main>
-    </div>
-
-    <footer id="bottomPlayer">
-        <div class="player-track-row">
-            <img id="player-cover" class="player-cover" src="" alt="Cover">
-            <div class="player-info-text">
-                <div id="player-title" class="player-title">Auralis</div>
-                <div id="player-artist" class="player-artist">Ready</div>
-            </div>
-            <button class="control-btn" id="btn-fav" aria-label="Favorite">
-                <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </button>
-        </div>
-
-        <div class="player-center-col">
-            <div class="player-controls-row">
-                <button class="control-btn" id="btn-shuffle" aria-label="Shuffle">
-                    <svg viewBox="0 0 24 24"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                </button>
-                <button class="control-btn" id="btn-prev" aria-label="Previous">
-                    <svg viewBox="0 0 24 24"><polygon points="19 20 9 12 19 4 19 20" fill="currentColor"/><line x1="5" y1="19" x2="5" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-                </button>
-                <button class="control-btn play-btn" id="btn-play" aria-label="Play">
-                    <svg id="icon-play" viewBox="0 0 24 24" style="display:block;"><polygon points="5 3 19 12 5 21 5 3" fill="currentColor"/></svg>
-                    <svg id="icon-pause" viewBox="0 0 24 24" style="display:none;"><rect x="6" y="4" width="4" height="16" fill="currentColor"/><rect x="14" y="4" width="4" height="16" fill="currentColor"/></svg>
-                </button>
-                <button class="control-btn" id="btn-next" aria-label="Next">
-                    <svg viewBox="0 0 24 24"><polygon points="5 4 15 12 5 20 5 4" fill="currentColor"/><line x1="19" y1="5" x2="19" y2="19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-                </button>
-                <button class="control-btn" id="btn-repeat" aria-label="Repeat">
-                    <svg viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 11V9a4 4 0 0 1 4-4h14M7 23l-4-4 4-4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 13v2a4 4 0 0 1-4 4H3" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                </button>
-            </div>
-
-            <div class="player-progress-row">
-                <span id="time-current">0:00</span>
-                <div class="progress-container" id="progress-container">
-                    <div class="progress-bar-bg">
-                        <div class="progress-bar-fill" id="progress-fill"></div>
-                    </div>
-                </div>
-                <span id="time-total">0:00</span>
-            </div>
-        </div>
-
-        <div class="volume-container">
-            <button class="control-btn" id="btn-mute" aria-label="Mute">
-                <svg viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </button>
-            <input type="range" class="volume-slider" id="volume-slider" min="0" max="1" step="0.01" value="1">
-        </div>
-    </footer>
+<div id="overlays">
+<aside id="queue-panel" class="panel glass" aria-label="Queue panel"><h2>Up Next</h2><div id="queue-list"></div></aside>
+<aside id="lyrics-panel" class="panel glass" aria-label="Lyrics panel"><h2>Spatial Lyrics</h2><p class="lyrics-line">Light bends softly through the room.</p><p class="lyrics-line">Every echo finds a new orbit.</p><p class="lyrics-line">Black holes bloom where silence moves.</p><p class="lyrics-line">Hold the signal. Let it breathe.</p></aside>
+<div id="toast" class="glass" role="status" aria-live="polite"></div>
+<div id="view-hint" class="glass">Press V for Focus / Gallery / Spatial</div>
+</div>
+  </div>
 </div>
 
-<div id="toastRegion"></div>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/Draggable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/InertiaPlugin.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.4.0/color-thief.umd.js"></script>
 <script>
+/* ===== MODULE: DATA ===== */
+(function(){
 "use strict";
 
-/* ==========================================================================
-   STATE MANAGEMENT
-   ========================================================================== */
+const TRACKS = [
+  { title: "Black Hole",    artist: "Nova Drift",   art: "https://picsum.photos/seed/blackhole/600/800", audio: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" },
+  { title: "Aurora Tides",  artist: "Lyra Echo",    art: "https://picsum.photos/seed/aurora/600/800",     audio: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" },
+  { title: "Neon Mirage",   artist: "Solace VX",    art: "https://picsum.photos/seed/neon/600/800",       audio: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3" },
+  { title: "Velvet Static", artist: "Mono Halo",    art: "https://picsum.photos/seed/velvet/600/800",     audio: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3" },
+  { title: "Glass Horizon", artist: "Aether Bloom", art: "https://picsum.photos/seed/glass/600/800",       audio: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3" },
+  { title: "Echo Chamber",  artist: "Pulse Theory", art: "https://picsum.photos/seed/echo/600/800",        audio: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3" }
+];
+
+/* ===== MODULE: STATE AND DOM CACHE ===== */
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => Array.from(r.querySelectorAll(s)); const root = document.documentElement; const app = $("#app"); const stageWrap = $("#stage-wrap"); const carousel = $("#carousel-stage"); const waveformCanvas = $("#waveform-canvas"); const waveCtx = waveformCanvas.getContext("2d", { alpha:true }); const webglCanvas = $("#webgl-canvas"); const progress = $("#progress"); const progressFill = $("#progress-fill"); const scrubber = $("#scrubber"); const volume = $("#volume"); const volumeFill = $("#volume-fill"); const queuePanel = $("#queue-panel"); const lyricsPanel = $("#lyrics-panel"); const queueList = $("#queue-list"); const toast = $("#toast"); const starLayers = $$(".star-layer");
+
+const supports = {
+  gsap: typeof window.gsap !== "undefined",
+  draggable: typeof window.Draggable !== "undefined",
+  inertia: typeof window.InertiaPlugin !== "undefined",
+  three: typeof window.THREE !== "undefined",
+  colorThief: typeof window.ColorThief !== "undefined",
+  reduced: window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+  coarse: window.matchMedia("(pointer: coarse)").matches,
+  lowPower: navigator.hardwareConcurrency <= 4 || window.innerWidth < 760
+};
+if (supports.gsap && supports.draggable) {
+  gsap.registerPlugin(Draggable);
+  if (supports.inertia) gsap.registerPlugin(InertiaPlugin);
+}
+
 const state = {
-    tracks: [],
-    queue: [],
-    index: -1,
-    isPlaying: false,
-    shuffle: false,
-    repeatMode: 0, // 0: off, 1: all, 2: one
-    volume: 1,
-    muted: false,
-    search: '',
-    sort: 'default',
-    filter: 'all',
-    favorites: new Set(),
-    dom: {},
-    audioEl: document.getElementById('audio'),
-    objectUrls: new Set(),
-    demoCover: generateFallbackArtwork("Auralis", ["#8e2de2", "#4a00e0", "#00c6ff"])
+  index: 0,
+  isPlaying: false,
+  userInteracted: false,
+  draggingProgress: false,
+  draggingVolume: false,
+  volume: 0.72,
+  viewMode: 0,
+  raf: 0,
+  running: true,
+  last: performance.now(),
+  elapsed: 0,
+  beatAvg: 30,
+  beatCooldown: 0,
+  energy: 0,
+  simulatedPhase: 0,
+  tiltX: 0,
+  tiltY: 0,
+  paletteBusy: false
 };
 
-/* ==========================================================================
-   UTILITIES
-   ========================================================================== */
-function esc(str) {
-    if (!str) return '';
-    return String(str).replace(/[&<>'"]/g, match => ({
-        '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
-    })[match]);
+const SLOTS = {
+  "-2": { x:-430, rotateY: 50, scale:.60, opacity:.55, blur:4, z:-360 },
+  "-1": { x:-238, rotateY: 28, scale:.78, opacity:.85, blur:1.5, z:-160 },
+  "0":  { x:0,    rotateY: 0,  scale:1.00, opacity:1,   blur:0, z:70 },
+  "1":  { x:238,  rotateY:-28, scale:.78, opacity:.85, blur:1.5, z:-160 },
+  "2":  { x:430,  rotateY:-50, scale:.60, opacity:.55, blur:4, z:-360 }
+};
+
+/* ===== MODULE: AUDIO ENGINE ===== */
+const audio = new Audio();
+audio.crossOrigin = "anonymous";
+audio.preload = "metadata";
+audio.volume = state.volume;
+let audioCtx = null;
+let analyser = null;
+let sourceNode = null;
+let freqData = new Uint8Array(128);
+
+function ensureAudioContext(){
+  if (audioCtx) return audioCtx;
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if (!AC) return null;
+  audioCtx = new AC();
+  analyser = audioCtx.createAnalyser();
+  analyser.fftSize = 256;
+  analyser.smoothingTimeConstant = 0.82;
+  freqData = new Uint8Array(analyser.frequencyBinCount);
+  try {
+sourceNode = audioCtx.createMediaElementSource(audio);
+sourceNode.connect(analyser);
+analyser.connect(audioCtx.destination);
+  } catch (err) {
+analyser.connect(audioCtx.destination);
+  }
+  return audioCtx;
 }
 
-function formatTime(seconds) {
-    if (isNaN(seconds) || !isFinite(seconds)) return "0:00";
-    const m = Math.floor(seconds / 60);
-    const s = Math.floor(seconds % 60);
-    return `${m}:${s.toString().padStart(2, '0')}`;
+function unlockAudio(){
+  state.userInteracted = true;
+  const ctx = ensureAudioContext();
+  if (ctx && ctx.state === "suspended") ctx.resume().catch(function(){});
 }
 
-function safeFileName(str) {
-    return str.replace(/[^a-z0-9]/gi, '-').replace(/-+/g, '-').toLowerCase();
+function loadTrack(i, autoplay){
+  const track = TRACKS[i];
+  if (!track) return;
+  const wasPlaying = state.isPlaying || autoplay;
+  audio.pause();
+  audio.src = track.audio;
+  audio.load();
+  updateText();
+  updateTheme(track);
+  if (wasPlaying) playCurrent();
 }
 
-function hashString(str) {
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-        hash = str.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    return hash;
+function playCurrent(){
+  unlockAudio();
+  audio.play().then(function(){
+state.isPlaying = true;
+updatePlayIcon();
+updateCards();
+showToast("Playing " + TRACKS[state.index].title);
+  }).catch(function(){
+state.isPlaying = true;
+updatePlayIcon();
+updateCards();
+showToast("Preview mode until audio unlocks");
+  });
 }
 
-function clamp(val, min, max) {
-    return Math.min(Math.max(val, min), max);
+function pauseCurrent(){
+  audio.pause();
+  state.isPlaying = false;
+  updatePlayIcon();
+  updateCards();
 }
 
-function showToast(message, type = 'info') {
-    const region = document.getElementById('toastRegion');
-    const toast = document.createElement('div');
-    toast.className = `toast toast-${type}`;
-    toast.textContent = message;
-    region.appendChild(toast);
-    setTimeout(() => {
-        toast.classList.add('fade-out');
-        setTimeout(() => toast.remove(), 300);
-    }, 3000);
+function togglePlay(){
+  if (state.isPlaying) pauseCurrent();
+  else playCurrent();
 }
 
-function copyToClipboard(text) {
-    if (navigator.clipboard) {
-        navigator.clipboard.writeText(text).then(() => showToast('Copied to clipboard', 'success')).catch(() => showToast('Failed to copy', 'error'));
-    } else {
-        const ta = document.createElement('textarea');
-        ta.value = text;
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand('copy');
-        document.body.removeChild(ta);
-        showToast('Copied to clipboard', 'success');
-    }
+audio.addEventListener("ended", function(){ navigate(1, true); });
+audio.addEventListener("loadedmetadata", updateProgress);
+audio.addEventListener("timeupdate", function(){ if (!state.draggingProgress) updateProgress(); });
+audio.addEventListener("error", function(){ showToast("Audio stream unavailable; using visual preview"); });
+
+/* ===== MODULE: CAROUSEL BUILD ===== */
+const cards = TRACKS.map(function(track, i){
+  const card = document.createElement("article");
+  card.className = "card";
+  card.setAttribute("role","button");
+  card.setAttribute("tabindex","0");
+  card.setAttribute("aria-label", track.title + " by " + track.artist);
+  card.innerHTML =
+'<div class="vinyl-ring"></div><div class="halo-ring"></div><div class="card-shell">' +
+'<img class="card-art" crossorigin="anonymous" alt="' + escapeHtml(track.title) + ' album art" src="' + track.art + '">' +
+'<div class="card-glass"></div><div class="card-sheen"></div><div class="card-meta">' +
+'<div class="card-title">' + escapeHtml(track.title) + '</div><div class="card-artist">' + escapeHtml(track.artist) + '</div>' +
+'</div></div><div class="card-reflection"></div>';
+  card.style.setProperty("--reflection", "url(" + track.art + ")");
+  card.addEventListener("click", function(){
+const diff = shortestDiff(i, state.index);
+if (diff === 0) togglePlay();
+else focusIndex(i, true);
+  });
+  card.addEventListener("keydown", function(e){
+if (e.key === "Enter" || e.key === " ") { e.preventDefault(); card.click(); }
+  });
+  carousel.appendChild(card);
+  return card;
+});
+
+function updateCards(){
+  const vwScale = Math.max(0.62, Math.min(1.14, stageWrap.clientWidth / 1100));
+  cards.forEach(function(card, i){
+let diff = shortestDiff(i, state.index);
+const visible = Math.abs(diff) <= 2;
+const slot = SLOTS[String(Math.max(-2, Math.min(2, diff)))] || SLOTS["0"];
+card.classList.toggle("active", diff === 0);
+card.classList.toggle("playing", state.isPlaying);
+card.style.pointerEvents = visible ? "auto" : "none";
+card.style.zIndex = String(20 - Math.abs(diff));
+const vars = {
+xPercent:-50,
+yPercent:-50,
+x:slot.x * vwScale,
+y:0,
+z:slot.z,
+rotationY:slot.rotateY,
+scale:slot.scale,
+opacity:visible ? slot.opacity : 0,
+filter:"blur(" + slot.blur + "px)",
+duration:.9,
+ease:"expo.out"
+};
+if (supports.gsap) gsap.to(card, vars);
+else Object.assign(card.style, { opacity:vars.opacity, filter:vars.filter, transform:"translate(-50%,-50%) translate3d("+vars.x+"px,0,"+vars.z+"px) rotateY("+vars.rotationY+"deg) scale("+vars.scale+")" });
+  });
 }
 
-function downloadText(filename, text) {
-    const blob = new Blob([text], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    a.click();
-    URL.revokeObjectURL(url);
+function entrance(){
+  if (!supports.gsap || supports.reduced) { updateCards(); return; }
+  gsap.fromTo(cards, { y:140, opacity:0, rotationX:18 }, { y:0, opacity:function(i){return cards[i].style.opacity || 1;}, rotationX:0, duration:1.25, ease:"elastic.out(1,.72)", stagger:.08, delay:.18, onUpdate:updateCards });
 }
 
-/* ==========================================================================
-   GRAPHICS & COLOR
-   ========================================================================== */
-function generateFallbackPalette(seedStr) {
-    const h = Math.abs(hashString(seedStr)) % 360;
-    return [
-        `hsl(${h}, 70%, 50%)`,
-        `hsl(${(h + 40) % 360}, 80%, 40%)`,
-        `hsl(${(h + 180) % 360}, 60%, 60%)`
-    ];
+/* ===== MODULE: THEME ENGINE ===== */
+function updateTheme(track){
+  const img = new Image();
+  img.crossOrigin = "anonymous";
+  img.onload = function(){
+let colors = null;
+if (supports.colorThief) {
+try { colors = new ColorThief().getPalette(img, 4); } catch(e) { colors = null; }
+}
+if (!colors) colors = sampleImagePalette(img);
+applyPalette(colors);
+  };
+  img.onerror = function(){ applyPalette([[66,232,255],[80,120,255],[20,40,48]]); };
+  img.src = track.art;
 }
 
-function generateFallbackArtwork(title, palette) {
-    const initial = title ? title.charAt(0).toUpperCase() : '♪';
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
-        <defs>
-            <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="${palette[0]}" />
-                <stop offset="100%" stop-color="${palette[1]}" />
-            </linearGradient>
-        </defs>
-        <rect width="300" height="300" fill="url(#g)" />
-        <circle cx="150" cy="150" r="100" fill="rgba(255,255,255,0.1)" />
-        <text x="150" y="180" font-family="sans-serif" font-size="100" font-weight="bold" fill="white" text-anchor="middle" opacity="0.8">${esc(initial)}</text>
-    </svg>`;
-    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+function sampleImagePalette(img){
+  const c = document.createElement("canvas");
+  const ctx = c.getContext("2d", { willReadFrequently:true });
+  c.width = 24; c.height = 32;
+  try {
+ctx.drawImage(img,0,0,c.width,c.height);
+const data = ctx.getImageData(0,0,c.width,c.height).data;
+let r=0,g=0,b=0,count=0, bright=[66,232,255];
+for (let i=0;i<data.length;i+=16) {
+const rr=data[i], gg=data[i+1], bb=data[i+2];
+const lum=rr+gg+bb;
+if (lum > bright[0]+bright[1]+bright[2]) bright=[rr,gg,bb];
+r+=rr; g+=gg; b+=bb; count++;
+}
+return [[r/count,g/count,b/count].map(Math.round), bright, [20,40,50]];
+  } catch(e) {
+return [[66,232,255],[100,110,255],[20,40,50]];
+  }
 }
 
-function extractPaletteFromCover(src) {
-    return new Promise((resolve) => {
-        const img = new Image();
-        img.crossOrigin = "Anonymous";
-        img.onload = () => {
-            const canvas = document.createElement('canvas');
-            canvas.width = 32; canvas.height = 32;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0, 32, 32);
-            try {
-                const data = ctx.getImageData(0,0,32,32).data;
-                let r=0, g=0, b=0, count=0;
-                for(let i=0; i<data.length; i+=16) { // step by 4 pixels to be fast
-                    if(data[i+3] > 128) {
-                        r+=data[i]; g+=data[i+1]; b+=data[i+2]; count++;
-                    }
-                }
-                if(count === 0) resolve(null);
-                r = Math.floor(r/count); g = Math.floor(g/count); b = Math.floor(b/count);
-                // create slightly varied palette
-                resolve([
-                    `rgb(${r},${g},${b})`,
-                    `rgb(${Math.max(0, r-40)},${Math.max(0, g-40)},${b})`,
-                    `rgb(${r},${g},${Math.min(255, b+50)})`
-                ]);
-            } catch(e) { resolve(null); }
-        };
-        img.onerror = () => resolve(null);
-        img.src = src;
-    });
+function applyPalette(colors){
+  const dominant = normalizeColor(colors[0] || [66,232,255]);
+  const accent = normalizeColor(colors[1] || dominant);
+  const mixed = [
+Math.round((dominant[0] + accent[0]) / 2),
+Math.round((dominant[1] + accent[1]) / 2),
+Math.round((dominant[2] + accent[2]) / 2)
+  ];
+  const vars = {
+"--accent": "rgb(" + accent.join(",") + ")",
+"--accent-rgb": accent.join(","),
+"--glow": "rgba(" + accent.join(",") + ",.58)",
+"--fog-tint": "rgba(" + mixed.join(",") + ",.22)",
+"--grid-color": "rgba(" + accent.join(",") + ",.38)"
+  };
+  if (supports.gsap) gsap.to(root, { duration:.8, ease:"power2.out", css:vars });
+  else Object.keys(vars).forEach(function(k){ root.style.setProperty(k, vars[k]); });
 }
 
-function applyPalette(palette) {
-    if (!palette || palette.length < 3) return;
-    const root = document.documentElement;
-    root.style.setProperty('--accent-a', palette[0]);
-    root.style.setProperty('--accent-b', palette[1]);
-    root.style.setProperty('--accent-c', palette[2]);
-    root.style.setProperty('--glow-a', palette[0].replace('rgb', 'rgba').replace(')', ', 0.4)'));
-    root.style.setProperty('--glow-b', palette[1].replace('rgb', 'rgba').replace(')', ', 0.4)'));
+function normalizeColor(c){
+  const night = new Date().getHours() < 7 || new Date().getHours() > 19;
+  return c.map(function(v, idx){
+const boost = idx === 2 ? 28 : 14;
+return Math.max(36, Math.min(255, Math.round(v * (night ? .82 : .95) + boost)));
+  });
 }
 
-/* ==========================================================================
-   ID3 & METADATA PARSING (Vanilla JS)
-   ========================================================================== */
-async function parseAudioMetadata(file) {
-    const result = { title: '', artist: '', album: '', cover: null, quality: 'Unknown', bitrate: 0 };
-    
-    // Fallback info from filename
-    let cleanName = file.name.replace(/\.[^/.]+$/, "");
-    let parts = cleanName.split('-');
-    if (parts.length >= 2) {
-        result.artist = parts[0].trim();
-        result.title = parts.slice(1).join('-').trim();
-    } else {
-        result.title = cleanName;
-        result.artist = 'Unknown Artist';
-    }
+/* ===== MODULE: THREE.JS PARTICLES, TRAILS, SHOCKWAVES ===== */
+let three = { ready:false, scene:null, camera:null, renderer:null, dust:null, shockwaves:[], trails:[] };
 
-    try {
-        // Read first 256KB to find ID3v2 tag
-        const slice = file.slice(0, 256 * 1024);
-        const buffer = await slice.arrayBuffer();
-        const view = new DataView(buffer);
-
-        if (view.getUint8(0) === 0x49 && view.getUint8(1) === 0x44 && view.getUint8(2) === 0x33) {
-            // ID3 tag found
-            const version = view.getUint8(3);
-            const tagSize = getSyncSafeInt(view, 6);
-            let offset = 10;
-            const limit = Math.min(buffer.byteLength, tagSize + 10);
-
-            while (offset < limit) {
-                if (offset + 10 > limit) break;
-                
-                const frameId = String.fromCharCode(view.getUint8(offset), view.getUint8(offset+1), view.getUint8(offset+2), view.getUint8(offset+3));
-                if (frameId.charCodeAt(0) === 0) break; // Padding
-
-                let frameSize = 0;
-                if (version === 3) frameSize = view.getUint32(offset + 4, false);
-                else if (version === 4) frameSize = getSyncSafeInt(view, offset + 4);
-                
-                offset += 10; // Skip header
-
-                if (offset + frameSize > limit) break;
-
-                const frameBuffer = buffer.slice(offset, offset + frameSize);
-                
-                if (frameId === 'TIT2') result.title = decodeTextFrame(frameBuffer) || result.title;
-                if (frameId === 'TPE1') result.artist = decodeTextFrame(frameBuffer) || result.artist;
-                if (frameId === 'TALB') result.album = decodeTextFrame(frameBuffer);
-                if (frameId === 'APIC') result.cover = parseAPICFrame(frameBuffer);
-
-                offset += frameSize;
-            }
-        }
-    } catch (e) {
-        console.warn("Metadata parsing error:", e);
-    }
-    return result;
+function initThree(){
+  if (!supports.three || three.ready) return;
+  const THREE = window.THREE;
+  three.scene = new THREE.Scene();
+  three.camera = new THREE.PerspectiveCamera(55, 16/9, .1, 1000);
+  three.camera.position.z = 90;
+  three.renderer = new THREE.WebGLRenderer({ canvas:webglCanvas, alpha:true, antialias:!supports.lowPower });
+  three.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  const count = supports.lowPower ? 220 : 520;
+  const geo = new THREE.BufferGeometry();
+  const pos = new Float32Array(count * 3);
+  for (let i=0;i<count;i++){
+pos[i*3]=(Math.random()-.5)*150;
+pos[i*3+1]=(Math.random()-.5)*90;
+pos[i*3+2]=(Math.random()-.5)*120;
+  }
+  geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+  const mat = new THREE.PointsMaterial({ color:0x88eeff, size:supports.lowPower?.22:.32, transparent:true, opacity:.58, blending:THREE.AdditiveBlending, depthWrite:false });
+  three.dust = new THREE.Points(geo, mat);
+  three.scene.add(three.dust);
+  three.ready = true;
+  resizeThree();
 }
 
-function getSyncSafeInt(view, offset) {
-    return (view.getUint8(offset) << 21) | (view.getUint8(offset+1) << 14) | (view.getUint8(offset+2) << 7) | view.getUint8(offset+3);
+function createShockwave(){
+  if (!three.ready || supports.reduced) return;
+  const THREE = window.THREE;
+  const geo = new THREE.RingGeometry(6, 6.35, 96);
+  const mat = new THREE.MeshBasicMaterial({ color:0x7eeeff, transparent:true, opacity:.72, blending:THREE.AdditiveBlending, side:THREE.DoubleSide, depthWrite:false });
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.userData.life = 0;
+  three.scene.add(mesh);
+  three.shockwaves.push(mesh);
 }
 
-function decodeTextFrame(buffer) {
-    const view = new Uint8Array(buffer);
-    if (view.length < 2) return '';
-    const encoding = view[0];
-    const data = view.slice(1);
-    try {
-        if (encoding === 0 || encoding === 3) {
-            let end = data.indexOf(0);
-            if (end === -1) end = data.length;
-            return new TextDecoder(encoding === 0 ? 'iso-8859-1' : 'utf-8').decode(data.slice(0, end));
-        } else if (encoding === 1 || encoding === 2) {
-            // UTF-16 with or without BOM
-            return new TextDecoder(encoding === 1 ? 'utf-16' : 'utf-16be').decode(data).replace(/\0/g, '');
-        }
-    } catch(e) {}
-    return '';
+function createTrail(dir){
+  if (!three.ready || supports.reduced) return;
+  const THREE = window.THREE;
+  const geo = new THREE.PlaneGeometry(26, .8);
+  const mat = new THREE.MeshBasicMaterial({ color:0x7eeeff, transparent:true, opacity:.48, blending:THREE.AdditiveBlending, depthWrite:false });
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.position.set(dir * -26, (Math.random()-.5)*16, 8);
+  mesh.rotation.z = (Math.random()-.5)*.2;
+  mesh.userData.life = 0;
+  mesh.userData.dir = dir;
+  three.scene.add(mesh);
+  three.trails.push(mesh);
 }
 
-function parseAPICFrame(buffer) {
-    const view = new Uint8Array(buffer);
-    if (view.length < 5) return null;
-    const encoding = view[0];
-    let offset = 1;
-    
-    // Find MIME
-    let mimeEnd = offset;
-    while (mimeEnd < view.length && view[mimeEnd] !== 0) mimeEnd++;
-    const mimeStr = String.fromCharCode.apply(null, view.slice(offset, mimeEnd));
-    let mime = mimeStr.toLowerCase() || 'image/jpeg';
-    if(mime === 'image/jpg') mime = 'image/jpeg';
-    
-    offset = mimeEnd + 1;
-    const pictureType = view[offset]; // 0x03 is front cover
-    offset++;
-    
-    // Skip description based on encoding
-    if (encoding === 1 || encoding === 2) { // UTF-16
-        while (offset < view.length - 1 && !(view[offset] === 0 && view[offset+1] === 0)) offset += 2;
-        offset += 2;
-    } else {
-        while (offset < view.length && view[offset] !== 0) offset++;
-        offset++;
-    }
-    
-    if (offset >= view.length) return null;
-    
-    const imgData = view.slice(offset);
-    const blob = new Blob([imgData], { type: mime });
-    const url = URL.createObjectURL(blob);
-    state.objectUrls.add(url);
-    return url;
+function updateThree(dt){
+  if (!three.ready) return;
+  if (three.dust) {
+three.dust.rotation.y += dt * .035;
+three.dust.rotation.x = state.tiltY * .018;
+three.dust.rotation.z = state.tiltX * .012;
+three.dust.material.opacity = .42 + state.energy * .28;
+  }
+  for (let i=three.shockwaves.length-1;i>=0;i--){
+const m = three.shockwaves[i];
+m.userData.life += dt * 1.45;
+const life = m.userData.life;
+m.scale.setScalar(1 + life * 8);
+m.material.opacity = Math.max(0, .7 * (1 - life));
+if (life >= 1) { three.scene.remove(m); m.geometry.dispose(); m.material.dispose(); three.shockwaves.splice(i,1); }
+  }
+  for (let i=three.trails.length-1;i>=0;i--){
+const m = three.trails[i];
+m.userData.life += dt * 1.2;
+m.position.x += m.userData.dir * dt * 70;
+m.material.opacity = Math.max(0, .48 * (1 - m.userData.life));
+if (m.userData.life >= 1) { three.scene.remove(m); m.geometry.dispose(); m.material.dispose(); three.trails.splice(i,1); }
+  }
+  three.renderer.render(three.scene, three.camera);
 }
 
-function inferAudioQuality(file, duration) {
-    let type = file.type || '';
-    let ext = file.name.split('.').pop().toLowerCase();
-    
-    let bitrate = 0;
-    if (duration > 0) {
-        bitrate = Math.round((file.size * 8) / duration / 1000);
-    }
-    
-    if (ext === 'flac' || ext === 'wav' || ext === 'alac' || type.includes('flac')) {
-        return { label: 'Lossless', class: 'quality-lossless', bitrate };
-    }
-    if (bitrate > 300) return { label: 'Hi-Res MP3', class: 'quality-high', bitrate };
-    return { label: 'Standard', class: '', bitrate };
+function resizeThree(){
+  if (!three.ready) return;
+  const w = stageWrap.clientWidth, h = stageWrap.clientHeight;
+  three.renderer.setSize(w, h, false);
+  three.camera.aspect = w / h;
+  three.camera.updateProjectionMatrix();
 }
 
-function getAudioDuration(url) {
-    return new Promise(resolve => {
-        const tempAudio = new Audio(url);
-        tempAudio.addEventListener('loadedmetadata', () => {
-            resolve(tempAudio.duration);
-            tempAudio.removeAttribute('src');
-        });
-        tempAudio.addEventListener('error', () => resolve(0));
-    });
+/* ===== MODULE: VISUALIZER AND BEAT DETECTION ===== */
+function getFrequencyData(dt){
+  if (analyser && audioCtx && audioCtx.state === "running" && !audio.paused) {
+analyser.getByteFrequencyData(freqData);
+  } else {
+state.simulatedPhase += dt * (state.isPlaying ? 4.2 : 1.2);
+for (let i=0;i<freqData.length;i++){
+const lowBoost = i < 10 ? 48 : 0;
+freqData[i] = Math.max(0, Math.min(255, 30 + lowBoost + Math.sin(state.simulatedPhase + i*.23) * 34 + Math.sin(state.simulatedPhase*1.7 + i*.07) * 18));
+}
+  }
+  let low = 0;
+  const bins = Math.min(14, freqData.length);
+  for (let i=0;i<bins;i++) low += freqData[i];
+  const energy = low / bins;
+  state.beatAvg = state.beatAvg * .94 + energy * .06;
+  state.energy = Math.max(0, Math.min(1, energy / 170));
+  state.beatCooldown = Math.max(0, state.beatCooldown - dt);
+  if (energy > state.beatAvg * 1.28 && energy > 82 && state.beatCooldown <= 0 && state.isPlaying) {
+state.beatCooldown = .28;
+beatPulse();
+  }
 }
 
-/* ==========================================================================
-   APP LOGIC & RENDER
-   ========================================================================== */
-function init() {
-    cacheDom();
-    bindEvents();
-    loadPreferences();
-    createDemoTracks();
-    renderAll();
+function drawWaveform(){
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const rect = waveformCanvas.getBoundingClientRect();
+  const w = Math.max(1, Math.floor(rect.width * dpr));
+  const h = Math.max(1, Math.floor(rect.height * dpr));
+  if (waveformCanvas.width !== w || waveformCanvas.height !== h) { waveformCanvas.width = w; waveformCanvas.height = h; }
+  waveCtx.clearRect(0,0,w,h);
+  const cx=w/2, cy=h/2;
+  const base=Math.min(w,h)*.34;
+  waveCtx.save();
+  waveCtx.translate(cx,cy);
+  for (let pass=0; pass<2; pass++){
+waveCtx.beginPath();
+for (let i=0;i<freqData.length;i++){
+const a = (i/freqData.length) * Math.PI * 2;
+const amp = (freqData[i]/255) * Math.min(w,h) * (pass ? .07 : .04);
+const r = base + amp + Math.sin(state.elapsed*1.4 + i*.2) * 2 * dpr;
+const x = Math.cos(a) * r;
+const y = Math.sin(a) * r;
+if (i===0) waveCtx.moveTo(x,y); else waveCtx.lineTo(x,y);
+}
+waveCtx.closePath();
+waveCtx.strokeStyle = pass ? "rgba(255,255,255,.46)" : getComputedStyle(root).getPropertyValue("--accent").trim();
+waveCtx.lineWidth = pass ? 1.1*dpr : 2.2*dpr;
+waveCtx.shadowBlur = pass ? 8*dpr : 24*dpr;
+waveCtx.shadowColor = getComputedStyle(root).getPropertyValue("--glow").trim();
+waveCtx.stroke();
+  }
+  waveCtx.restore();
 }
 
-function cacheDom() {
-    state.dom = {
-        app: document.getElementById('app'),
-        views: document.querySelectorAll('.view'),
-        libList: document.getElementById('libraryList'),
-        searchInput: document.getElementById('searchInput'),
-        sortSelect: document.getElementById('sortSelect'),
-        filterSelect: document.getElementById('filterSelect'),
-        fileInput: document.getElementById('fileInput'),
-        heroCover: document.getElementById('hero-cover'),
-        heroTitle: document.getElementById('hero-title'),
-        heroArtist: document.getElementById('hero-artist'),
-        heroBadges: document.getElementById('hero-badges'),
-        playerCover: document.getElementById('player-cover'),
-        playerTitle: document.getElementById('player-title'),
-        playerArtist: document.getElementById('player-artist'),
-        timeCurrent: document.getElementById('time-current'),
-        timeTotal: document.getElementById('time-total'),
-        progressFill: document.getElementById('progress-fill'),
-        progressContainer: document.getElementById('progress-container'),
-        volumeSlider: document.getElementById('volume-slider'),
-        iconPlay: document.getElementById('icon-play'),
-        iconPause: document.getElementById('icon-pause'),
-        btnPlay: document.getElementById('btn-play'),
-        btnRepeat: document.getElementById('btn-repeat'),
-        btnShuffle: document.getElementById('btn-shuffle'),
-        btnFav: document.getElementById('btn-fav'),
-        manifestPreview: document.getElementById('manifestPreview')
-    };
+function beatPulse(){
+  const active = cards[state.index];
+  if (supports.gsap && active) {
+gsap.fromTo(active, { scale:1.025 }, { scale:1, duration:.42, ease:"elastic.out(1,.45)", overwrite:"auto" });
+gsap.fromTo(active.querySelector(".card-shell"), { boxShadow:"0 0 140px var(--glow)" }, { boxShadow:"", duration:.7, ease:"power2.out" });
+  }
+  createShockwave();
 }
 
-function bindEvents() {
-    document.getElementById('btn-import').addEventListener('click', () => state.dom.fileInput.click());
-    state.dom.fileInput.addEventListener('change', handleFiles);
-    
-    // Nav
-    document.getElementById('btn-view-library').addEventListener('click', () => switchView('view-library'));
-    document.getElementById('btn-view-studio').addEventListener('click', () => {
-        switchView('view-studio');
-        updateStudioStats();
-    });
-
-    // Playback controls
-    state.dom.btnPlay.addEventListener('click', togglePlay);
-    document.getElementById('btn-next').addEventListener('click', nextTrack);
-    document.getElementById('btn-prev').addEventListener('click', previousTrack);
-    document.getElementById('btn-mute').addEventListener('click', toggleMute);
-    state.dom.btnShuffle.addEventListener('click', toggleShuffle);
-    state.dom.btnRepeat.addEventListener('click', toggleRepeat);
-    state.dom.btnFav.addEventListener('click', toggleFavorite);
-    
-    // Progress & Volume
-    state.dom.progressContainer.addEventListener('click', seekToClick);
-    state.dom.volumeSlider.addEventListener('input', (e) => setVolume(e.target.value));
-
-    // Audio Element events
-    state.audioEl.addEventListener('timeupdate', updateTimeUI);
-    state.audioEl.addEventListener('ended', handleTrackEnd);
-    state.audioEl.addEventListener('error', handleAudioError);
-    state.audioEl.addEventListener('play', () => { state.isPlaying = true; updatePlayUI(); });
-    state.audioEl.addEventListener('pause', () => { state.isPlaying = false; updatePlayUI(); });
-
-    // Library Controls
-    state.dom.searchInput.addEventListener('input', renderLibrary);
-    state.dom.sortSelect.addEventListener('change', () => { state.sort = state.dom.sortSelect.value; renderLibrary(); });
-    state.dom.filterSelect.addEventListener('change', () => { state.filter = state.dom.filterSelect.value; renderLibrary(); });
-
-    // Studio Controls
-    document.getElementById('btn-generate-manifest').addEventListener('click', renderManifestPreview);
-    document.getElementById('btn-copy-manifest').addEventListener('click', () => copyToClipboard(state.dom.manifestPreview.value));
-    document.getElementById('btn-download-manifest').addEventListener('click', () => downloadText('manifest.json', state.dom.manifestPreview.value));
-
-    // Keyboard Shortcuts
-    document.addEventListener('keydown', (e) => {
-        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-        if (e.code === 'Space') { e.preventDefault(); togglePlay(); }
-        if (e.code === 'ArrowRight') { e.preventDefault(); state.audioEl.currentTime = Math.min(state.audioEl.duration, state.audioEl.currentTime + 10); }
-        if (e.code === 'ArrowLeft') { e.preventDefault(); state.audioEl.currentTime = Math.max(0, state.audioEl.currentTime - 10); }
-        if (e.code === 'KeyN') nextTrack();
-        if (e.code === 'KeyP') previousTrack();
-        if (e.code === 'KeyM') toggleMute();
-    });
-
-    // Cleanup
-    window.addEventListener('beforeunload', () => {
-        state.objectUrls.forEach(url => URL.revokeObjectURL(url));
-    });
+/* ===== MODULE: NAVIGATION AND VIEW MODES ===== */
+function navigate(dir, autoplay){
+  focusIndex((state.index + dir + TRACKS.length) % TRACKS.length, autoplay);
+  createTrail(dir);
 }
 
-function switchView(id) {
-    state.dom.views.forEach(v => v.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
+function focusIndex(i, autoplay){
+  if (i === state.index && !autoplay) return;
+  state.index = (i + TRACKS.length) % TRACKS.length;
+  loadTrack(state.index, autoplay);
+  updateCards();
 }
 
-function loadPreferences() {
-    try {
-        const pref = JSON.parse(localStorage.getItem('auralis_prefs') || '{}');
-        if (pref.volume !== undefined) setVolume(pref.volume);
-        if (pref.muted) toggleMute();
-        if (pref.repeatMode) { state.repeatMode = pref.repeatMode; updateRepeatUI(); }
-        if (pref.shuffle) { state.shuffle = pref.shuffle; updateShuffleUI(); }
-        if (pref.favorites) state.favorites = new Set(pref.favorites);
-    } catch(e){}
+function cycleViewMode(){
+  state.viewMode = (state.viewMode + 1) % 3;
+  const names = ["Focus", "Gallery", "Spatial"];
+  app.dataset.view = names[state.viewMode].toLowerCase();
+  const z = state.viewMode === 2 ? -120 : 0;
+  const sc = state.viewMode === 1 ? .88 : 1;
+  if (supports.gsap) gsap.to(carousel, { z:z, scale:sc, duration:.75, ease:"expo.out" });
+  showToast(names[state.viewMode] + " view");
 }
 
-function savePreferences() {
-    localStorage.setItem('auralis_prefs', JSON.stringify({
-        volume: state.volume,
-        muted: state.muted,
-        repeatMode: state.repeatMode,
-        shuffle: state.shuffle,
-        favorites: Array.from(state.favorites)
-    }));
+/* ===== MODULE: UI UPDATES ===== */
+function updateText(){
+  const t = TRACKS[state.index];
+  $("#search-title").textContent = t.title;
+  $("#now-title").textContent = t.title;
+  $("#now-artist").textContent = t.artist;
+  $("#now-art").src = t.art;
+  document.title = t.title + " - Spatial Music OS";
 }
 
-function createDemoTracks() {
-    // Valid silent RIFF WAV base64
-    const silentWav = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=";
-    const demo = [
-        { id: 'd1', title: 'Stellar Drift', artist: 'Auralis System', album: 'Demo Sounds', src: silentWav, duration: 120, cover: state.demoCover, palette: generateFallbackPalette('Stellar Drift'), quality: {label: 'System', class: 'quality-high'} },
-        { id: 'd2', title: 'Neon Pulse', artist: 'Auralis System', album: 'Demo Sounds', src: silentWav, duration: 180, cover: state.demoCover, palette: generateFallbackPalette('Neon Pulse'), quality: {label: 'System', class: 'quality-high'} },
-    ];
-    state.tracks = demo;
-    buildQueue();
+function updatePlayIcon(){
+  $("#play-btn").setAttribute("aria-label", state.isPlaying ? "Pause" : "Play");
+  $("#play-icon").innerHTML = state.isPlaying ? '<path d="M7 5h4v14H7zM13 5h4v14h-4z"/>' : '<path d="M8 5v14l11-7z"/>';
 }
 
-/* ==========================================================================
-   IMPORT LOGIC
-   ========================================================================== */
-async function handleFiles(e) {
-    const files = Array.from(e.target.files).filter(f => f.type.startsWith('audio/') || f.name.match(/\.(mp3|flac|wav|m4a|ogg|aac|opus)$/i));
-    if (!files.length) return;
-    
-    showToast(`Importing ${files.length} tracks...`);
-    
-    for (const file of files) {
-        const url = URL.createObjectURL(file);
-        state.objectUrls.add(url);
-        
-        let duration = await getAudioDuration(url);
-        let meta = await parseAudioMetadata(file);
-        let quality = inferAudioQuality(file, duration);
-        
-        let palette = null;
-        let finalCover = meta.cover;
-        if (finalCover) {
-            palette = await extractPaletteFromCover(finalCover);
-        } else {
-            palette = generateFallbackPalette(meta.title + meta.artist);
-            finalCover = generateFallbackArtwork(meta.title, palette);
-        }
-
-        const track = {
-            id: 't_' + Date.now() + '_' + Math.floor(Math.random()*1000),
-            title: meta.title || file.name,
-            artist: meta.artist || 'Unknown Artist',
-            album: meta.album || '',
-            src: url,
-            duration: duration,
-            cover: finalCover,
-            palette: palette,
-            quality: quality,
-            fileObj: file // reference for manifest generator
-        };
-        
-        state.tracks.push(track);
-    }
-    
-    showToast('Import complete!', 'success');
-    buildQueue();
-    renderLibrary();
-    updateStudioStats();
-    
-    if (state.index === -1 && state.tracks.length > 0) {
-        setTrack(0, {play: false});
-    }
+function updateProgress(){
+  const dur = isFinite(audio.duration) ? audio.duration : 0;
+  const cur = isFinite(audio.currentTime) ? audio.currentTime : 0;
+  const pct = dur ? Math.max(0, Math.min(100, (cur/dur)*100)) : 0;
+  progressFill.style.width = pct + "%";
+  scrubber.style.left = pct + "%";
+  progress.setAttribute("aria-valuenow", String(Math.round(pct)));
+  $("#elapsed").textContent = formatTime(cur);
+  $("#duration").textContent = formatTime(dur);
 }
 
-/* ==========================================================================
-   PLAYBACK LOGIC
-   ========================================================================== */
-function buildQueue() {
-    state.queue = Array.from(state.tracks.keys());
-    if (state.shuffle) {
-        // Fisher-Yates
-        for (let i = state.queue.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [state.queue[i], state.queue[j]] = [state.queue[j], state.queue[i]];
-        }
-        // If playing, move current track to front
-        if (state.index !== -1) {
-            const qIdx = state.queue.indexOf(state.index);
-            if (qIdx > -1) {
-                state.queue.splice(qIdx, 1);
-                state.queue.unshift(state.index);
-            }
-        }
-    }
+function formatTime(s){
+  if (!isFinite(s) || s <= 0) return "0:00";
+  const m = Math.floor(s/60);
+  const sec = Math.floor(s%60);
+  return m + ":" + String(sec).padStart(2,"0");
 }
 
-function setTrack(idx, opts = {play: true}) {
-    if (idx < 0 || idx >= state.tracks.length) return;
-    state.index = idx;
-    const track = state.tracks[idx];
-    
-    // Animation
-    state.dom.app.classList.add('track-changing');
-    setTimeout(() => state.dom.app.classList.remove('track-changing'), 400);
-
-    // Audio Source
-    const wasPlaying = !state.audioEl.paused;
-    state.audioEl.src = track.src;
-    state.audioEl.load();
-
-    // UI Update
-    state.dom.heroTitle.textContent = track.title;
-    state.dom.heroArtist.textContent = track.artist;
-    state.dom.heroCover.src = track.cover;
-    state.dom.playerTitle.textContent = track.title;
-    state.dom.playerArtist.textContent = track.artist;
-    state.dom.playerCover.src = track.cover;
-    state.dom.timeTotal.textContent = formatTime(track.duration);
-    
-    let badgesHtml = '';
-    if(track.quality) badgesHtml += `<span class="badge ${track.quality.class}">${esc(track.quality.label)}</span>`;
-    if(track.album) badgesHtml += `<span class="badge">Album: ${esc(track.album)}</span>`;
-    state.dom.heroBadges.innerHTML = badgesHtml;
-
-    applyPalette(track.palette);
-    updateFavUI();
-    renderLibrary(); // update active state
-    updateMediaSession(track);
-
-    if (opts.play || wasPlaying) {
-        playCurrent();
-    }
+function showToast(msg){
+  toast.textContent = msg;
+  if (supports.gsap) {
+gsap.killTweensOf(toast);
+gsap.fromTo(toast, { opacity:0, y:-20 }, { opacity:1, y:0, duration:.28, ease:"power2.out", onComplete:function(){
+gsap.to(toast, { opacity:0, y:-14, delay:1.8, duration:.35, ease:"power2.in" });
+}});
+  } else {
+toast.style.opacity = 1;
+setTimeout(function(){ toast.style.opacity = 0; }, 1800);
+  }
 }
 
-function playCurrent() {
-    if(!state.audioEl.src) return;
-    state.audioEl.play().catch(e => {
-        console.warn('Play interrupted or failed', e);
-        showToast('Playback failed. Browser policy or bad file.', 'error');
-        state.isPlaying = false;
-        updatePlayUI();
-    });
+function togglePanel(panel){
+  const open = panel.dataset.open !== "true";
+  panel.dataset.open = String(open);
+  if (supports.gsap) gsap.to(panel, { x:open ? 0 : (panel.id === "lyrics-panel" ? "-120%" : "120%"), opacity:open ? 1 : 0, duration:.55, ease:"expo.out" });
+  else { panel.style.transform = open ? "translateX(0)" : "translateX(120%)"; panel.style.opacity = open ? 1 : 0; }
 }
 
-function pauseCurrent() {
-    state.audioEl.pause();
+function buildQueue(){
+  queueList.innerHTML = "";
+  TRACKS.forEach(function(t, i){
+const item = document.createElement("div");
+item.className = "queue-item js-ripple";
+item.innerHTML = '<img crossorigin="anonymous" src="' + t.art + '" alt=""><div><b>' + escapeHtml(t.title) + '</b><span>' + escapeHtml(t.artist) + '</span></div><small>' + (i === state.index ? "Now" : String(i+1).padStart(2,"0")) + '</small>';
+item.addEventListener("click", function(){ focusIndex(i, true); });
+queueList.appendChild(item);
+  });
 }
 
-function togglePlay() {
-    if (state.index === -1 && state.tracks.length > 0) setTrack(0);
-    if (!state.audioEl.src) return;
-    if (state.isPlaying) pauseCurrent();
-    else playCurrent();
+/* ===== MODULE: INPUTS AND MICROINTERACTIONS ===== */
+function bindEvents(){
+  document.addEventListener("pointerdown", unlockAudio, { once:true, passive:true });
+  $$(".js-ripple, .avatar").forEach(function(el){ el.addEventListener("pointerdown", ripple); });
+  $("#play-btn").addEventListener("click", togglePlay);
+  $("#prev-btn").addEventListener("click", function(){ navigate(-1, true); });
+  $("#next-btn").addEventListener("click", function(){ navigate(1, true); });
+  $("#back-btn").addEventListener("click", function(){ navigate(-1, false); });
+  $("#forward-btn").addEventListener("click", function(){ navigate(1, false); });
+  $("#queue-btn").addEventListener("click", function(){ buildQueue(); togglePanel(queuePanel); });
+  $("#sidebar-btn").addEventListener("click", function(){ buildQueue(); togglePanel(queuePanel); });
+  $("#lyrics-btn").addEventListener("click", function(){ togglePanel(lyricsPanel); });
+  $("#share-btn").addEventListener("click", function(){
+const t = TRACKS[state.index];
+if (navigator.share) navigator.share({ title:t.title, text:t.title + " by " + t.artist }).catch(function(){});
+else showToast("Share link copied");
+  });
+  $("#more-btn").addEventListener("click", function(){ showToast("Immersive options ready"); });
+  $("#avatar-btn").addEventListener("click", function(){ showToast("Vision profile synced"); });
+
+  document.addEventListener("keydown", function(e){
+if (e.target && /INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
+if (e.key === "ArrowLeft") navigate(-1, false);
+if (e.key === "ArrowRight") navigate(1, false);
+if (e.code === "Space") { e.preventDefault(); togglePlay(); }
+if (e.key.toLowerCase() === "v") cycleViewMode();
+  });
+
+  bindSlider(progress, function(p){
+if (isFinite(audio.duration)) {
+audio.currentTime = audio.duration * p;
+updateProgress();
+}
+  }, function(active){ state.draggingProgress = active; });
+
+  bindSlider(volume, function(p){
+state.volume = Math.max(0, Math.min(1, p));
+audio.volume = state.volume;
+volumeFill.style.width = (state.volume*100) + "%";
+volume.setAttribute("aria-valuenow", String(Math.round(state.volume*100)));
+  });
+
+  window.addEventListener("resize", debounce(function(){ updateCards(); resizeThree(); drawWaveform(); }, 120), { passive:true });
+
+  document.addEventListener("visibilitychange", function(){
+state.running = !document.hidden;
+if (document.hidden) {
+cancelAnimationFrame(state.raf);
+if (audioCtx && audioCtx.state === "running") audioCtx.suspend().catch(function(){});
+} else {
+if (state.isPlaying && audioCtx) audioCtx.resume().catch(function(){});
+state.last = performance.now();
+loop(state.last);
+}
+  });
+
+  if (window.DeviceOrientationEvent) {
+window.addEventListener("deviceorientation", function(e){
+state.tiltX = Math.max(-12, Math.min(12, e.gamma || 0));
+state.tiltY = Math.max(-12, Math.min(12, e.beta || 0));
+}, { passive:true });
+  }
+
+  if (supports.gsap && supports.draggable) {
+const proxy = document.createElement("div");
+let startX = 0;
+Draggable.create(proxy, {
+type:"x",
+trigger:carousel,
+inertia:supports.inertia,
+onPress:function(){ startX = this.x; unlockAudio(); },
+onRelease:function(){
+const delta = this.x - startX;
+if (Math.abs(delta) > 40) navigate(delta < 0 ? 1 : -1, false);
+gsap.set(proxy, { x:0 });
+}
+});
+  } else {
+let down = 0;
+carousel.addEventListener("pointerdown", function(e){ down = e.clientX; });
+carousel.addEventListener("pointerup", function(e){ const d=e.clientX-down; if (Math.abs(d)>40) navigate(d<0?1:-1,false); });
+  }
 }
 
-function nextTrack() {
-    if (!state.tracks.length) return;
-    const qIdx = state.queue.indexOf(state.index);
-    if (state.repeatMode === 2) {
-        state.audioEl.currentTime = 0;
-        playCurrent();
-    } else if (qIdx < state.queue.length - 1) {
-        setTrack(state.queue[qIdx + 1]);
-    } else if (state.repeatMode === 1) {
-        setTrack(state.queue[0]);
-    } else {
-        pauseCurrent();
-        state.audioEl.currentTime = 0;
-    }
+function bindSlider(el, onChange, onActive){
+  function setFromEvent(e){
+const r = el.getBoundingClientRect();
+const p = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width));
+onChange(p);
+  }
+  el.addEventListener("pointerdown", function(e){
+e.preventDefault();
+unlockAudio();
+if (onActive) onActive(true);
+el.setPointerCapture(e.pointerId);
+setFromEvent(e);
+  });
+  el.addEventListener("pointermove", function(e){ if (el.hasPointerCapture && el.hasPointerCapture(e.pointerId)) setFromEvent(e); });
+  el.addEventListener("pointerup", function(e){ if (onActive) onActive(false); try{el.releasePointerCapture(e.pointerId);}catch(err){} });
+  el.addEventListener("keydown", function(e){
+const step = e.key === "ArrowLeft" || e.key === "ArrowDown" ? -0.05 : e.key === "ArrowRight" || e.key === "ArrowUp" ? 0.05 : 0;
+if (step) {
+e.preventDefault();
+const current = el === volume ? state.volume : (audio.duration ? audio.currentTime/audio.duration : 0);
+onChange(Math.max(0, Math.min(1, current + step)));
+}
+  });
 }
 
-function previousTrack() {
-    if (!state.tracks.length) return;
-    if (state.audioEl.currentTime > 3) {
-        state.audioEl.currentTime = 0;
-        return;
-    }
-    const qIdx = state.queue.indexOf(state.index);
-    if (qIdx > 0) {
-        setTrack(state.queue[qIdx - 1]);
-    } else if (state.repeatMode === 1) {
-        setTrack(state.queue[state.queue.length - 1]);
-    } else {
-        state.audioEl.currentTime = 0;
-    }
+function ripple(e){
+  const el = e.currentTarget;
+  const rect = el.getBoundingClientRect();
+  const s = document.createElement("span");
+  s.className = "ripple-span";
+  s.style.width = s.style.height = Math.max(rect.width, rect.height) + "px";
+  s.style.left = (e.clientX - rect.left) + "px";
+  s.style.top = (e.clientY - rect.top) + "px";
+  el.appendChild(s);
+  setTimeout(function(){ s.remove(); }, 760);
 }
 
-function handleTrackEnd() {
-    if (state.repeatMode === 2) {
-        playCurrent();
-    } else {
-        nextTrack();
-    }
+/* ===== MODULE: MASTER RAF LOOP ===== */
+function loop(now){
+  if (!state.running) return;
+  const dt = Math.min(.05, (now - state.last) / 1000 || .016);
+  state.last = now;
+  state.elapsed += dt;
+
+  if (!supports.reduced) {
+starLayers[0].style.transform = "translate3d(" + (state.elapsed*5 + state.tiltX*.8) + "px," + (state.elapsed*2 + state.tiltY*.4) + "px,0)";
+starLayers[1].style.transform = "translate3d(" + (-state.elapsed*3 + state.tiltX*.55) + "px," + (state.elapsed*1.4 + state.tiltY*.3) + "px,0)";
+starLayers[2].style.transform = "translate3d(" + (state.elapsed*1.5 + state.tiltX*.28) + "px," + (-state.elapsed*.8 + state.tiltY*.2) + "px,0)";
+  }
+
+  getFrequencyData(dt);
+  drawWaveform();
+  updateThree(dt);
+
+  if (state.isPlaying && supports.gsap && !supports.reduced) {
+const active = cards[state.index];
+if (active) {
+const breathe = 1 + Math.sin(state.elapsed*2.1)*.004 + state.energy*.006;
+active.style.setProperty("--beat-scale", breathe);
+}
+  }
+
+  state.raf = requestAnimationFrame(loop);
 }
 
-function handleAudioError(e) {
-    console.error("Audio error", e);
-    showToast("Audio playback error.", "error");
-    state.isPlaying = false;
-    updatePlayUI();
+/* ===== MODULE: UTILITIES ===== */
+function shortestDiff(i, center){
+  let diff = i - center;
+  const n = TRACKS.length;
+  if (diff > n/2) diff -= n;
+  if (diff < -n/2) diff += n;
+  return diff;
+}
+function escapeHtml(str){
+  return String(str).replace(/[&<>"']/g, function(ch){ return ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;" })[ch]; });
+}
+function debounce(fn, wait){
+  let t = 0;
+  return function(){ clearTimeout(t); t = setTimeout(fn, wait); };
 }
 
-function seekToClick(e) {
-    if(!state.audioEl.duration) return;
-    const rect = state.dom.progressContainer.getBoundingClientRect();
-    const pos = (e.clientX - rect.left) / rect.width;
-    state.audioEl.currentTime = pos * state.audioEl.duration;
+/* ===== MODULE: BOOT ===== */
+function boot(){
+  const hour = new Date().getHours();
+  root.style.setProperty("--warmth", hour >= 8 && hour <= 17 ? "rgba(255,190,120,.075)" : "rgba(90,120,255,.04)");
+  audio.src = TRACKS[0].audio;
+  updateText();
+  updatePlayIcon();
+  buildQueue();
+  updateCards();
+  entrance();
+  updateTheme(TRACKS[0]);
+  initThree();
+  resizeThree();
+  drawWaveform();
+  bindEvents();
+  state.last = performance.now();
+  state.raf = requestAnimationFrame(loop);
 }
+if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
+else boot();
 
-function updateTimeUI() {
-    if(!state.audioEl.duration) return;
-    state.dom.timeCurrent.textContent = formatTime(state.audioEl.currentTime);
-    const percent = (state.audioEl.currentTime / state.audioEl.duration) * 100;
-    state.dom.progressFill.style.width = `${percent}%`;
-}
-
-function setVolume(val) {
-    state.volume = clamp(parseFloat(val), 0, 1);
-    state.audioEl.volume = state.volume;
-    state.dom.volumeSlider.value = state.volume;
-    if (state.volume > 0) state.muted = false;
-    savePreferences();
-}
-
-function toggleMute() {
-    state.muted = !state.muted;
-    state.audioEl.muted = state.muted;
-    savePreferences();
-}
-
-function toggleShuffle() {
-    state.shuffle = !state.shuffle;
-    buildQueue();
-    updateShuffleUI();
-    savePreferences();
-}
-
-function toggleRepeat() {
-    state.repeatMode = (state.repeatMode + 1) % 3;
-    updateRepeatUI();
-    savePreferences();
-}
-
-function toggleFavorite() {
-    if(state.index === -1) return;
-    const track = state.tracks[state.index];
-    if (state.favorites.has(track.id)) state.favorites.delete(track.id);
-    else state.favorites.add(track.id);
-    updateFavUI();
-    savePreferences();
-    renderLibrary();
-}
-
-/* ==========================================================================
-   UI UPDATES
-   ========================================================================== */
-function updatePlayUI() {
-    state.dom.iconPlay.style.display = state.isPlaying ? 'none' : 'block';
-    state.dom.iconPause.style.display = state.isPlaying ? 'block' : 'none';
-}
-
-function updateShuffleUI() {
-    state.dom.btnShuffle.classList.toggle('active', state.shuffle);
-}
-
-function updateRepeatUI() {
-    state.dom.btnRepeat.classList.toggle('active', state.repeatMode !== 0);
-    // Simple visual indicator for Repeat One
-    state.dom.btnRepeat.style.color = state.repeatMode === 2 ? 'var(--accent-a)' : '';
-}
-
-function updateFavUI() {
-    if(state.index === -1) return;
-    const track = state.tracks[state.index];
-    const isFav = state.favorites.has(track.id);
-    state.dom.btnFav.classList.toggle('active', isFav);
-    state.dom.btnFav.querySelector('path').setAttribute('fill', isFav ? 'currentColor' : 'none');
-}
-
-function renderLibrary() {
-    const term = state.search.toLowerCase();
-    
-    let filtered = state.tracks.map((t, i) => ({t, i})).filter(({t}) => {
-        if (state.filter === 'favorites' && !state.favorites.has(t.id)) return false;
-        if (state.filter === 'lossless' && (!t.quality || t.quality.label !== 'Lossless')) return false;
-        if (term && !t.title.toLowerCase().includes(term) && !t.artist.toLowerCase().includes(term)) return false;
-        return true;
-    });
-
-    if (state.sort === 'title') filtered.sort((a,b) => a.t.title.localeCompare(b.t.title));
-    else if (state.sort === 'artist') filtered.sort((a,b) => a.t.artist.localeCompare(b.t.artist));
-    else if (state.sort === 'recent') filtered.reverse(); // assuming sequential insertion
-
-    if (filtered.length === 0) {
-        state.dom.libList.innerHTML = `<div class="empty-state">
-            <h3>No Tracks Found</h3>
-            <p>Import music to build your library.</p>
-        </div>`;
-        return;
-    }
-
-    const frag = document.createDocumentFragment();
-    filtered.forEach(({t, i}) => {
-        const div = document.createElement('div');
-        div.className = `track-card ${i === state.index ? 'active' : ''}`;
-        div.onclick = () => setTrack(i);
-        
-        let qBadge = t.quality && t.quality.label !== 'Standard' ? `<span style="color:var(--accent-c); font-weight:bold;">· ${esc(t.quality.label)}</span>` : '';
-        
-        div.innerHTML = `
-            <img class="track-card-cover" src="${esc(t.cover)}" alt="Cover">
-            <div class="track-card-info">
-                <div class="track-card-title">${esc(t.title)}</div>
-                <div class="track-card-artist">${esc(t.artist)}</div>
-                <div class="track-card-meta">
-                    <span>${formatTime(t.duration)}</span>
-                    ${qBadge}
-                </div>
-            </div>
-            <div class="track-card-actions">
-                ${state.favorites.has(t.id) ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="var(--accent-a)"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="var(--accent-a)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>' : ''}
-            </div>
-        `;
-        frag.appendChild(div);
-    });
-    
-    state.dom.libList.innerHTML = '';
-    state.dom.libList.appendChild(frag);
-}
-
-function renderAll() {
-    updateShuffleUI();
-    updateRepeatUI();
-    state.dom.volumeSlider.value = state.volume;
-    renderLibrary();
-    if(state.tracks.length > 0) {
-        setTrack(0, {play: false});
-    }
-}
-
-/* ==========================================================================
-   CREATOR STUDIO & MANIFEST
-   ========================================================================== */
-function updateStudioStats() {
-    document.getElementById('stat-total').textContent = state.tracks.length;
-    document.getElementById('stat-covers').textContent = state.tracks.filter(t => t.cover && t.cover.startsWith('blob:')).length;
-    document.getElementById('stat-lossless').textContent = state.tracks.filter(t => t.quality && t.quality.label === 'Lossless').length;
-}
-
-function renderManifestPreview() {
-    const manifest = state.tracks.map(t => {
-        let slugName = safeFileName(`${t.artist}-${t.title}`);
-        let srcPath = t.fileObj ? `music/${slugName}.${t.fileObj.name.split('.').pop()}` : t.src;
-        let coverPath = (t.cover && t.cover.startsWith('blob:')) ? `covers/${slugName}.jpg` : t.cover;
-        
-        return {
-            id: t.id,
-            title: t.title,
-            artist: t.artist,
-            album: t.album,
-            src: srcPath,
-            duration: t.duration,
-            cover: coverPath,
-            quality: t.quality ? t.quality.label : 'Unknown',
-            palette: t.palette
-        };
-    });
-    
-    state.dom.manifestPreview.value = JSON.stringify(manifest, null, 2);
-    showToast('Manifest generated!', 'success');
-}
-
-/* ==========================================================================
-   MEDIA SESSION API
-   ========================================================================== */
-function updateMediaSession(track) {
-    if ('mediaSession' in navigator) {
-        navigator.mediaSession.metadata = new MediaMetadata({
-            title: track.title,
-            artist: track.artist,
-            album: track.album || 'Auralis Ultra',
-            artwork: [
-                { src: track.cover, sizes: '512x512', type: 'image/jpeg' }
-            ]
-        });
-
-        navigator.mediaSession.setActionHandler('play', playCurrent);
-        navigator.mediaSession.setActionHandler('pause', pauseCurrent);
-        navigator.mediaSession.setActionHandler('previoustrack', previousTrack);
-        navigator.mediaSession.setActionHandler('nexttrack', nextTrack);
-    }
-}
-
-// Boot
-window.onload = init;
-
+})();
 </script>
 </body>
 </html>
